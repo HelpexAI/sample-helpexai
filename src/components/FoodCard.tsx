@@ -9,9 +9,10 @@ import { Plus, Flame, Sparkles, Check, Ban } from "lucide-react";
 
 interface FoodCardProps {
   item: MenuItem;
+  onSelect?: (item: MenuItem) => void;
 }
 
-export function FoodCard({ item }: FoodCardProps) {
+export function FoodCard({ item, onSelect }: FoodCardProps) {
   const { config, addToCart, cart } = useStore();
   const [justAdded, setJustAdded] = useState(false);
 
@@ -19,7 +20,8 @@ export function FoodCard({ item }: FoodCardProps) {
   const cartItem = cart.find((ci) => ci.item.id === item.id);
   const inCartQty = cartItem ? cartItem.quantity : 0;
 
-  const handleAdd = () => {
+  const handleAdd = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!item.isAvailable) return;
     addToCart(item);
     setJustAdded(true);
@@ -33,7 +35,16 @@ export function FoodCard({ item }: FoodCardProps) {
 
   return (
     <div
-      className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] overflow-hidden transition-all duration-300 hover:border-amber-300 dark:hover:border-cheezious-borderLight hover:shadow-md dark:hover:shadow-card hover:-translate-y-1 ${
+      onClick={() => onSelect?.(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect?.(item);
+        }
+      }}
+      className={`group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] overflow-hidden transition-all duration-300 hover:border-amber-300 dark:hover:border-cheezious-borderLight hover:shadow-md dark:hover:shadow-card hover:-translate-y-1 cursor-pointer select-none ${
         !item.isAvailable ? "opacity-75 grayscale-[0.5]" : ""
       }`}
     >

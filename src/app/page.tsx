@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { MenuItem } from "@/data/defaultCheezious";
 import { useStore } from "@/context/StoreContext";
 import { AgencyHeaderBanner, AgencyFooterBanner } from "@/components/AgencyBanner";
 import { Navbar } from "@/components/Navbar";
 import { CategoryNav } from "@/components/CategoryNav";
 import { FoodCard } from "@/components/FoodCard";
+import { ItemDetailModal } from "@/components/ItemDetailModal";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Footer } from "@/components/Footer";
 import {
@@ -58,6 +60,7 @@ export default function HomePage() {
   const { config, setIsCartOpen, cartCount, isLoading } = useStore();
   const [activeCategory, setActiveCategory] = useState<string>("All Items");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   // Filter items based on active category and search
   const filteredItems = useMemo(() => {
@@ -187,7 +190,11 @@ export default function HomePage() {
 
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                     {group.items.map((item) => (
-                      <FoodCard key={item.id} item={item} />
+                      <FoodCard
+                        key={item.id}
+                        item={item}
+                        onSelect={setSelectedItem}
+                      />
                     ))}
                   </div>
                 </section>
@@ -239,7 +246,11 @@ export default function HomePage() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 {filteredItems.map((item) => (
-                  <FoodCard key={item.id} item={item} />
+                  <FoodCard
+                    key={item.id}
+                    item={item}
+                    onSelect={setSelectedItem}
+                  />
                 ))}
               </div>
             )}
@@ -267,6 +278,12 @@ export default function HomePage() {
           </button>
         </div>
       )}
+
+      {/* Item Detail & Customization Modal */}
+      <ItemDetailModal
+        item={selectedItem}
+        onClose={() => setSelectedItem(null)}
+      />
 
       {/* Cart Drawer Modal */}
       <CartDrawer />
