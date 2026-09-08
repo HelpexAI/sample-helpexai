@@ -13,6 +13,7 @@ import { OperationalTab } from "@/components/admin/OperationalTab";
 import { CategoryTab } from "@/components/admin/CategoryTab";
 import { MenuItemsTab } from "@/components/admin/MenuItemsTab";
 import { LiveSyncBar } from "@/components/admin/LiveSyncBar";
+import { PrintableQrModal } from "@/components/admin/PrintableQrModal";
 import {
   Crown,
   ArrowLeft,
@@ -26,6 +27,7 @@ import {
   Moon,
   UserCheck,
   ShieldCheck,
+  QrCode,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -44,6 +46,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"items" | "categories" | "operations">("items");
+  const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
 
   // Read isolated sessionStorage on mount to verify session validity
   useEffect(() => {
@@ -178,6 +181,17 @@ export default function AdminPage() {
               <span className="hidden sm:inline">Storefront</span>
             </Link>
 
+            {/* Printable QR Code Standee */}
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(true)}
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-cheezious-yellow border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+              title="Generate Printable Table Standee & Menu QR with Branding"
+            >
+              <QrCode className="w-3.5 h-3.5 text-amber-600 dark:text-cheezious-yellow" />
+              <span className="hidden sm:inline">Print QR</span>
+            </button>
+
             {/* Explicit Logout with Confirmation */}
             <button
               onClick={handleLogout}
@@ -248,7 +262,11 @@ export default function AdminPage() {
           )}
 
           {activeTab === "operations" && (
-            <OperationalTab config={config} onChange={updateStoreConfig} />
+            <OperationalTab
+              config={config}
+              onChange={updateStoreConfig}
+              onOpenQrModal={() => setIsQrModalOpen(true)}
+            />
           )}
         </div>
       </main>
@@ -259,6 +277,14 @@ export default function AdminPage() {
         onReset={resetToDefaults}
         showToast={showToast}
         onSessionExpired={handleSessionExpired}
+      />
+
+      {/* Printable QR Code Modal */}
+      <PrintableQrModal
+        config={config}
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        showToast={showToast}
       />
     </div>
   );

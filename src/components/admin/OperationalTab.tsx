@@ -2,14 +2,15 @@
 
 import React from "react";
 import { StoreConfig } from "@/data/defaultCheezious";
-import { Store, Phone, MessageSquare, Truck, Megaphone, MapPin, DollarSign } from "lucide-react";
+import { Store, Phone, MessageSquare, Truck, Megaphone, MapPin, DollarSign, QrCode, Printer } from "lucide-react";
 
 interface OperationalTabProps {
   config: StoreConfig;
   onChange: (updater: (prev: StoreConfig) => StoreConfig) => void;
+  onOpenQrModal?: () => void;
 }
 
-export function OperationalTab({ config, onChange }: OperationalTabProps) {
+export function OperationalTab({ config, onChange, onOpenQrModal }: OperationalTabProps) {
   const updateField = <K extends keyof StoreConfig>(key: K, value: StoreConfig[K]) => {
     onChange((prev) => ({
       ...prev,
@@ -28,6 +29,37 @@ export function OperationalTab({ config, onChange }: OperationalTabProps) {
           Configure branding, official hotline numbers, delivery fees, and top banners.
         </p>
       </div>
+
+      {/* Printable QR Code Card Banner */}
+      {onOpenQrModal && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border border-amber-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-cheezious-yellow flex items-center justify-center text-black shadow-glow shrink-0">
+              <QrCode className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm sm:text-base font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
+                <span>Printable QR Standee & Menu Cards</span>
+                <span className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-cheezious-yellow px-2 py-0.5 rounded-full font-bold uppercase">
+                  300 DPI Print
+                </span>
+              </h4>
+              <p className="text-xs text-neutral-600 dark:text-cheezious-textMuted mt-0.5">
+                Generate branded table standees with custom table numbers linking customers straight to your live menu.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenQrModal}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-cheezious-yellow hover:bg-cheezious-yellowHover text-black text-xs font-black flex items-center justify-center gap-2 shadow-glow transition-all active:scale-95 shrink-0"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Generate Printable QR</span>
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Brand Name */}
