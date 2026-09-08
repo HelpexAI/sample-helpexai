@@ -29,7 +29,7 @@ export const defaultCheezious: StoreConfig = {
   brandName: "Cheezious",
   slogan: "Delivering Cheezy Khushiyan",
   hotline: "051-111-446-699",
-  whatsappNumber: "923000000000",
+  whatsappNumber: "+92 314 6517960",
   selectedBranch: "F-7 Markaz / Commercial Market / Blue Area",
   bannerNotice: "🔥 Delivering Cheezy Khushiyan across Islamabad & Rawalpindi!",
   currency: "Rs.",

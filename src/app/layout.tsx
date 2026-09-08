@@ -18,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#111317] text-white antialiased">
+    <html lang="en">
+      <body className="min-h-screen bg-[#F8F9FA] dark:bg-[#111317] text-neutral-900 dark:text-white antialiased transition-colors duration-200">
         <StoreProvider>
           {children}
           <ToastContainer />

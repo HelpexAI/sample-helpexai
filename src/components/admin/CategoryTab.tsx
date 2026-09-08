@@ -91,12 +91,12 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-[#222631] pb-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <Layers className="w-5 h-5 text-cheezious-yellow" />
+      <div className="border-b border-gray-200 dark:border-[#222631] pb-4">
+        <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+          <Layers className="w-5 h-5 text-amber-500 dark:text-cheezious-yellow" />
           Category Manager
         </h3>
-        <p className="text-xs text-cheezious-textMuted mt-0.5">
+        <p className="text-xs text-neutral-500 dark:text-cheezious-textMuted mt-0.5">
           Add new sections, rename existing categories, or reorder how they appear in the sticky menu tabs.
         </p>
       </div>
@@ -104,7 +104,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
       {/* Add New Category Form */}
       <form
         onSubmit={handleAddCategory}
-        className="bg-[#1A1D24] p-4 rounded-xl border border-[#222631] flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+        className="bg-gray-50 dark:bg-[#1A1D24] p-4 rounded-xl border border-gray-200 dark:border-[#222631] flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
       >
         <div className="flex-1">
           <input
@@ -115,9 +115,9 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
               setError("");
             }}
             placeholder="New Category Name (e.g. Desserts, Beverages)"
-            className="w-full bg-[#111317] text-white text-sm px-3.5 py-2.5 rounded-xl border border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow"
+            className="w-full bg-white dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow"
           />
-          {error && <p className="text-xs text-rose-400 mt-1">{error}</p>}
+          {error && <p className="text-xs text-rose-500 mt-1">{error}</p>}
         </div>
         <button
           type="submit"
@@ -129,13 +129,13 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
       </form>
 
       {/* Categories List */}
-      <div className="bg-[#1A1D24] rounded-xl border border-[#222631] overflow-hidden">
-        <div className="p-3 bg-[#16181F] border-b border-[#222631] text-xs font-semibold text-cheezious-textMuted flex items-center justify-between">
+      <div className="bg-white dark:bg-[#1A1D24] rounded-xl border border-gray-200 dark:border-[#222631] overflow-hidden shadow-sm">
+        <div className="p-3 bg-gray-50 dark:bg-[#16181F] border-b border-gray-200 dark:border-[#222631] text-xs font-semibold text-neutral-600 dark:text-cheezious-textMuted flex items-center justify-between">
           <span>Active Categories ({config.categories.length})</span>
           <span>Order & Controls</span>
         </div>
 
-        <div className="divide-y divide-[#222631]">
+        <div className="divide-y divide-gray-100 dark:divide-[#222631]">
           {config.categories.map((cat, index) => {
             const count = config.items.filter((it) => it.category === cat).length;
             const isEditing = editingIndex === index;
@@ -143,11 +143,11 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
             return (
               <div
                 key={cat}
-                className="p-3.5 flex items-center justify-between gap-3 hover:bg-[#20242D] transition-colors"
+                className="p-3.5 flex items-center justify-between gap-3 hover:bg-gray-50 dark:hover:bg-[#20242D] transition-colors"
               >
                 {/* Category Name or Inline Editor */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="text-xs font-mono font-bold text-cheezious-textMuted w-5">
+                  <span className="text-xs font-mono font-bold text-neutral-400 dark:text-cheezious-textMuted w-5">
                     #{index + 1}
                   </span>
 
@@ -157,7 +157,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
                         type="text"
                         value={editCatName}
                         onChange={(e) => setEditCatName(e.target.value)}
-                        className="bg-[#111317] text-white text-xs px-2.5 py-1.5 rounded-lg border border-cheezious-yellow focus:outline-none w-full"
+                        className="bg-white dark:bg-[#111317] text-neutral-900 dark:text-white text-xs px-2.5 py-1.5 rounded-lg border border-cheezious-yellow focus:outline-none w-full"
                         autoFocus
                       />
                       <button
@@ -169,7 +169,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
                       </button>
                       <button
                         onClick={() => setEditingIndex(null)}
-                        className="p-1.5 bg-[#222631] text-gray-400 rounded-lg hover:text-white"
+                        className="p-1.5 bg-gray-200 dark:bg-[#222631] text-neutral-600 dark:text-gray-400 rounded-lg hover:text-neutral-900 dark:hover:text-white"
                         title="Cancel"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -177,8 +177,8 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 truncate">
-                      <span className="text-white font-bold text-sm truncate">{cat}</span>
-                      <span className="text-[11px] bg-[#222631] text-cheezious-textMuted px-2 py-0.5 rounded-full">
+                      <span className="text-neutral-900 dark:text-white font-bold text-sm truncate">{cat}</span>
+                      <span className="text-[11px] bg-gray-100 dark:bg-[#222631] text-neutral-600 dark:text-cheezious-textMuted px-2 py-0.5 rounded-full font-medium">
                         {count} dish{count === 1 ? "" : "es"}
                       </span>
                     </div>
@@ -191,7 +191,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
                   <button
                     onClick={() => handleMove(index, "up")}
                     disabled={index === 0}
-                    className="p-1.5 rounded-lg bg-[#111317] border border-[#222631] text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     title="Move up"
                   >
                     <ArrowUp className="w-3.5 h-3.5" />
@@ -201,7 +201,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
                   <button
                     onClick={() => handleMove(index, "down")}
                     disabled={index === config.categories.length - 1}
-                    className="p-1.5 rounded-lg bg-[#111317] border border-[#222631] text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-neutral-600 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     title="Move down"
                   >
                     <ArrowDown className="w-3.5 h-3.5" />
@@ -211,7 +211,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
                   {!isEditing && (
                     <button
                       onClick={() => handleStartEdit(index)}
-                      className="p-1.5 rounded-lg bg-[#111317] border border-[#222631] text-cheezious-yellow hover:bg-cheezious-yellow/10 transition-colors"
+                      className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-amber-600 dark:text-cheezious-yellow hover:bg-amber-500/10 transition-colors"
                       title="Rename category"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -221,7 +221,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
                   {/* Delete */}
                   <button
                     onClick={() => handleDeleteCategory(index)}
-                    className="p-1.5 rounded-lg bg-[#111317] border border-[#222631] text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-rose-500 hover:bg-rose-500/10 transition-colors"
                     title="Delete category"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

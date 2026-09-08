@@ -24,17 +24,17 @@ export function AdminAuthModal({ onAuthenticated }: AdminAuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-      <div className="bg-[#1A1D24] border border-[#222631] rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md">
+      <div className="bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-6 transition-colors duration-200">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-cheezious-yellow/10 border border-cheezious-yellow/30 text-cheezious-yellow mx-auto flex items-center justify-center shadow-glow">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/15 dark:bg-cheezious-yellow/10 border border-amber-500/30 dark:border-cheezious-yellow/30 text-amber-600 dark:text-cheezious-yellow mx-auto flex items-center justify-center shadow-glow">
             <Lock className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-black text-white tracking-tight">
+          <h2 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">
             Cheezious Admin Access
           </h2>
-          <p className="text-xs text-cheezious-textMuted max-w-xs mx-auto">
+          <p className="text-xs text-neutral-500 dark:text-cheezious-textMuted max-w-xs mx-auto">
             Enter your Admin Secret or Cloudflare Bearer Token to manage menu items, prices, and store settings.
           </p>
         </div>
@@ -42,7 +42,7 @@ export function AdminAuthModal({ onAuthenticated }: AdminAuthModalProps) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-cheezious-textLight block mb-1.5">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-cheezious-textLight block mb-1.5">
               Admin Password / Secret Key
             </label>
             <div className="relative">
@@ -54,26 +54,26 @@ export function AdminAuthModal({ onAuthenticated }: AdminAuthModalProps) {
                   setError("");
                 }}
                 placeholder="Enter secret (default: admin123)"
-                className="w-full bg-[#111317] text-white text-sm px-4 py-3 rounded-xl border border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow placeholder:text-cheezious-textMuted pr-10"
+                className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-4 py-3 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow placeholder:text-neutral-400 dark:placeholder:text-cheezious-textMuted pr-10"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-cheezious-textMuted hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 dark:text-cheezious-textMuted dark:hover:text-white"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {error && (
-              <p className="text-xs text-rose-400 mt-1.5 flex items-center gap-1">
+              <p className="text-xs text-rose-500 mt-1.5 flex items-center gap-1">
                 <ShieldAlert className="w-3.5 h-3.5" />
                 {error}
               </p>
             )}
-            <p className="text-[11px] text-cheezious-textMuted mt-1.5">
-              💡 Tip: Default demo key is <code className="text-cheezious-yellow font-bold">admin123</code> or any password.
+            <p className="text-[11px] text-neutral-500 dark:text-cheezious-textMuted mt-1.5">
+              💡 Tip: Default demo key is <code className="text-amber-600 dark:text-cheezious-yellow font-bold">admin123</code> or any password.
             </p>
           </div>
 
@@ -87,10 +87,10 @@ export function AdminAuthModal({ onAuthenticated }: AdminAuthModalProps) {
         </form>
 
         {/* Back Link */}
-        <div className="pt-2 text-center border-t border-[#222631]">
+        <div className="pt-2 text-center border-t border-gray-200 dark:border-[#222631]">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-cheezious-textMuted hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 dark:text-cheezious-textMuted dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Return to Public Cheezious Storefront</span>

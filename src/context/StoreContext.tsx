@@ -30,6 +30,9 @@ interface StoreContextType {
   cartSubtotal: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  // Theme
+  theme: "light" | "dark";
+  toggleTheme: () => void;
   // Sync
   isLoading: boolean;
   refreshFromRemote: () => Promise<void>;
@@ -47,6 +50,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [toasts, setToasts] = useState<ToastInfo[]>([]);
+  const [theme, setThemeState] = useState<"light" | "dark">("light");
+
+  // Initialize theme on client mount - default to light
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("cheezious_theme") as "light" | "dark" | null;
+    const initialTheme = savedTheme === "dark" ? "dark" : "light";
+    setThemeState(initialTheme);
+    if (initialTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setThemeState((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      localStorage.setItem("cheezious_theme", next);
+      if (next === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      return next;
+    });
+  };
 
   // Initial load
   useEffect(() => {
@@ -174,6 +203,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         toasts,
         showToast,
         removeToast,
+        theme,
+        toggleTheme,
       }}
     >
       {children}

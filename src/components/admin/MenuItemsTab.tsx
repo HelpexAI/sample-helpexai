@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import { MenuItem, StoreConfig } from "@/data/defaultCheezious";
-import { formatPrice } from "@/lib/whatsapp";
 import { DishModal } from "./DishModal";
 import {
   Utensils,
@@ -11,8 +10,6 @@ import {
   Search,
   Edit2,
   Trash2,
-  Flame,
-  Sparkles,
   Check,
   Ban,
   Filter,
@@ -105,13 +102,13 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#222631] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#222631] pb-4">
         <div>
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Utensils className="w-5 h-5 text-cheezious-yellow" />
+          <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+            <Utensils className="w-5 h-5 text-amber-500 dark:text-cheezious-yellow" />
             Menu Items Manager
           </h3>
-          <p className="text-xs text-cheezious-textMuted mt-0.5">
+          <p className="text-xs text-neutral-500 dark:text-cheezious-textMuted mt-0.5">
             Inline price editing, quick stock toggle (In Stock / Sold Out), and dish creator.
           </p>
         </div>
@@ -126,26 +123,26 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
       </div>
 
       {/* Search & Category Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-[#1A1D24] p-3.5 rounded-xl border border-[#222631]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50 dark:bg-[#1A1D24] p-3.5 rounded-xl border border-gray-200 dark:border-[#222631]">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-cheezious-textMuted" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-cheezious-textMuted" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search dish name or description..."
-            className="w-full bg-[#111317] text-white text-xs sm:text-sm pl-9 pr-3 py-2 rounded-lg border border-[#222631] focus:border-cheezious-yellow focus:outline-none"
+            className="w-full bg-white dark:bg-[#111317] text-neutral-900 dark:text-white text-xs sm:text-sm pl-9 pr-3 py-2 rounded-lg border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none"
           />
         </div>
 
         {/* Category filter */}
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-cheezious-textMuted shrink-0 hidden sm:block" />
+          <Filter className="w-4 h-4 text-neutral-400 dark:text-cheezious-textMuted shrink-0 hidden sm:block" />
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-[#111317] text-white text-xs sm:text-sm px-3 py-2 rounded-lg border border-[#222631] focus:border-cheezious-yellow focus:outline-none w-full sm:w-auto"
+            className="bg-white dark:bg-[#111317] text-neutral-900 dark:text-white text-xs sm:text-sm px-3 py-2 rounded-lg border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none w-full sm:w-auto"
           >
             <option value="All">All Categories ({config.items.length})</option>
             {config.categories.map((cat) => (
@@ -158,30 +155,30 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
       </div>
 
       {/* Items Table / Cards */}
-      <div className="bg-[#1A1D24] rounded-xl border border-[#222631] overflow-hidden">
-        <div className="p-3 bg-[#16181F] border-b border-[#222631] text-xs font-semibold text-cheezious-textMuted grid grid-cols-12 gap-3 items-center">
+      <div className="bg-white dark:bg-[#1A1D24] rounded-xl border border-gray-200 dark:border-[#222631] overflow-hidden shadow-sm">
+        <div className="p-3 bg-gray-50 dark:bg-[#16181F] border-b border-gray-200 dark:border-[#222631] text-xs font-semibold text-neutral-600 dark:text-cheezious-textMuted grid grid-cols-12 gap-3 items-center">
           <span className="col-span-6 sm:col-span-5">Dish Details</span>
           <span className="col-span-3 sm:col-span-3">Inline Price ({config.currency})</span>
           <span className="col-span-3 sm:col-span-2 text-center">Status</span>
           <span className="hidden sm:block sm:col-span-2 text-right">Actions</span>
         </div>
 
-        <div className="divide-y divide-[#222631]">
+        <div className="divide-y divide-gray-100 dark:divide-[#222631]">
           {filteredItems.length === 0 ? (
-            <div className="p-8 text-center text-xs text-cheezious-textMuted">
+            <div className="p-8 text-center text-xs text-neutral-500 dark:text-cheezious-textMuted">
               No menu items match your search or filter.
             </div>
           ) : (
             filteredItems.map((item) => (
               <div
                 key={item.id}
-                className={`p-3.5 grid grid-cols-12 gap-3 items-center hover:bg-[#20242D] transition-colors ${
-                  !item.isAvailable ? "opacity-70 bg-black/20" : ""
+                className={`p-3.5 grid grid-cols-12 gap-3 items-center hover:bg-gray-50 dark:hover:bg-[#20242D] transition-colors ${
+                  !item.isAvailable ? "opacity-70 bg-gray-50/50 dark:bg-black/20" : ""
                 }`}
               >
                 {/* Details Column */}
                 <div className="col-span-6 sm:col-span-5 flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-[#111317] border border-[#222631]">
+                  <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631]">
                     <Image
                       src={item.imageUrl}
                       alt={item.name}
@@ -198,16 +195,16 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-white font-bold text-xs sm:text-sm truncate">
+                      <span className="text-neutral-900 dark:text-white font-bold text-xs sm:text-sm truncate">
                         {item.name}
                       </span>
                       {item.badge && (
-                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-cheezious-yellow/10 text-cheezious-yellow border border-cheezious-yellow/30">
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-500/15 dark:bg-cheezious-yellow/10 text-amber-700 dark:text-cheezious-yellow border border-amber-500/30 dark:border-cheezious-yellow/30">
                           {item.badge}
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-cheezious-textMuted block truncate">
+                    <span className="text-[10px] text-neutral-500 dark:text-cheezious-textMuted block truncate">
                       {item.category}
                     </span>
                   </div>
@@ -215,7 +212,7 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
 
                 {/* Inline Price Editor */}
                 <div className="col-span-3 sm:col-span-3 flex items-center gap-1.5">
-                  <span className="text-xs text-cheezious-textMuted font-bold">
+                  <span className="text-xs text-neutral-500 dark:text-cheezious-textMuted font-bold">
                     {config.currency}
                   </span>
                   <input
@@ -224,7 +221,7 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
                     onChange={(e) =>
                       handlePriceChange(item.id, Number(e.target.value))
                     }
-                    className="w-20 sm:w-24 bg-[#111317] text-white font-black text-xs sm:text-sm px-2.5 py-1.5 rounded-lg border border-[#222631] focus:border-cheezious-yellow focus:outline-none"
+                    className="w-20 sm:w-24 bg-white dark:bg-[#111317] text-neutral-900 dark:text-white font-black text-xs sm:text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none"
                   />
                 </div>
 
@@ -235,8 +232,8 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
                     onClick={() => handleToggleStock(item.id)}
                     className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold flex items-center gap-1 transition-all ${
                       item.isAvailable
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
-                        : "bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30"
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/40 hover:bg-emerald-500/25"
+                        : "bg-rose-500/15 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 dark:border-rose-500/40 hover:bg-rose-500/25"
                     }`}
                   >
                     {item.isAvailable ? (
@@ -254,10 +251,10 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
                 </div>
 
                 {/* Actions Column */}
-                <div className="col-span-12 sm:col-span-2 flex items-center justify-end gap-1.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#222631]">
+                <div className="col-span-12 sm:col-span-2 flex items-center justify-end gap-1.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 dark:border-[#222631]">
                   <button
                     onClick={() => setModalItem(item)}
-                    className="p-1.5 rounded-lg bg-[#111317] border border-[#222631] text-cheezious-yellow hover:bg-cheezious-yellow/10 transition-colors"
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-amber-600 dark:text-cheezious-yellow hover:bg-amber-500/10 transition-colors"
                     title="Edit dish"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -265,7 +262,7 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
 
                   <button
                     onClick={() => handleDeleteItem(item)}
-                    className="p-1.5 rounded-lg bg-[#111317] border border-[#222631] text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-rose-500 hover:bg-rose-500/10 transition-colors"
                     title="Delete dish"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

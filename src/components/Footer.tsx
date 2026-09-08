@@ -105,7 +105,7 @@ export function Footer() {
             </p>
             <div className="pt-1">
               <a
-                href="https://wa.me/923000000000?text=Hi%20Helpex%20Solutions!%20I%20want%20to%20know%20more%20about%20your%20restaurant%20websites."
+                href="https://wa.me/923146517960?text=Hi%20Helpex%20Solutions!%20I%20want%20to%20know%20more%20about%20your%20restaurant%20websites."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-semibold hover:underline"

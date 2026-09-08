@@ -20,23 +20,23 @@ export function ToastContainer() {
             key={toast.id}
             className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-2xl border transition-all duration-300 animate-slide-in backdrop-blur-md ${
               isSuccess
-                ? "bg-[#1A1D24]/95 border-emerald-500/40 text-emerald-300"
+                ? "bg-white/95 dark:bg-[#1A1D24]/95 border-emerald-500/50 text-emerald-800 dark:text-emerald-300"
                 : isError
-                ? "bg-[#1A1D24]/95 border-rose-500/40 text-rose-300"
-                : "bg-[#1A1D24]/95 border-amber-500/40 text-amber-300"
+                ? "bg-white/95 dark:bg-[#1A1D24]/95 border-rose-500/50 text-rose-800 dark:text-rose-300"
+                : "bg-white/95 dark:bg-[#1A1D24]/95 border-amber-500/50 text-amber-900 dark:text-amber-300"
             }`}
           >
             <div className="shrink-0 mt-0.5">
-              {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-              {isError && <AlertCircle className="w-5 h-5 text-rose-400" />}
-              {!isSuccess && !isError && <Info className="w-5 h-5 text-amber-400" />}
+              {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+              {isError && <AlertCircle className="w-5 h-5 text-rose-500" />}
+              {!isSuccess && !isError && <Info className="w-5 h-5 text-amber-500" />}
             </div>
-            <div className="flex-1 text-sm font-medium text-white/90">
+            <div className="flex-1 text-sm font-medium text-neutral-900 dark:text-white/90">
               {toast.message}
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="shrink-0 text-gray-400 hover:text-white transition-colors"
+              className="shrink-0 text-neutral-400 hover:text-neutral-900 dark:text-gray-400 dark:hover:text-white transition-colors"
               aria-label="Dismiss toast"
             >
               <X className="w-4 h-4" />

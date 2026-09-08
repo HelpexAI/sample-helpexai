@@ -84,7 +84,7 @@ export function getWhatsAppOrderUrl({
   customer: CustomerDetails;
 }): string {
   // Clean phone number (strip leading +, spaces, dashes)
-  const phone = (config.whatsappNumber || "923000000000").replace(/[^0-9]/g, "");
+  const phone = (config.whatsappNumber || "923146517960").replace(/[^0-9]/g, "");
   const message = generateWhatsAppMessage({ config, cartItems, customer });
   const encoded = encodeURIComponent(message);
   return `https://wa.me/${phone}?text=${encoded}`;

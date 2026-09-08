@@ -9,13 +9,10 @@ import {
 } from "@/lib/kvSync";
 import {
   Cloud,
-  Send,
   CheckCircle2,
-  AlertCircle,
   RotateCcw,
   Settings,
   X,
-  ExternalLink,
 } from "lucide-react";
 
 interface CloudflareSyncBarProps {
@@ -61,14 +58,14 @@ export function CloudflareSyncBar({
   return (
     <>
       {/* Floating Action Bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-[#16181F]/95 backdrop-blur-md border-t border-[#222631] py-3.5 px-4 sm:px-6 shadow-2xl">
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#16181F]/95 backdrop-blur-md border-t border-gray-200 dark:border-[#222631] py-3.5 px-4 sm:px-6 shadow-2xl transition-colors duration-200">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 text-xs">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-white font-medium">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
               Changes auto-saved in local browser cache.
             </span>
-            <span className="text-cheezious-textMuted hidden md:inline">
+            <span className="text-neutral-500 dark:text-cheezious-textMuted hidden md:inline">
               Ready to publish globally to Cloudflare KV.
             </span>
           </div>
@@ -86,7 +83,7 @@ export function CloudflareSyncBar({
                   onReset();
                 }
               }}
-              className="px-3 py-2 rounded-xl bg-[#222631] hover:bg-[#2D3342] text-cheezious-textMuted hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-[#222631] hover:bg-gray-200 dark:hover:bg-[#2D3342] text-neutral-700 dark:text-cheezious-textMuted hover:text-neutral-900 dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
               title="Reset to default Cheezious menu"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -97,7 +94,7 @@ export function CloudflareSyncBar({
             <button
               type="button"
               onClick={() => setShowSettings(true)}
-              className="p-2 rounded-xl bg-[#222631] hover:bg-[#2D3342] text-cheezious-textMuted hover:text-white text-xs font-semibold transition-colors"
+              className="p-2 rounded-xl bg-gray-100 dark:bg-[#222631] hover:bg-gray-200 dark:hover:bg-[#2D3342] text-neutral-700 dark:text-cheezious-textMuted hover:text-neutral-900 dark:hover:text-white text-xs font-semibold transition-colors"
               title="Worker Endpoint Settings"
               aria-label="Worker Endpoint Settings"
             >
@@ -122,16 +119,16 @@ export function CloudflareSyncBar({
 
       {/* Cloudflare Endpoint Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1A1D24] border border-[#222631] rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#222631] pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Settings className="w-4 h-4 text-cheezious-yellow" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 transition-colors duration-200">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#222631] pb-3">
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <Settings className="w-4 h-4 text-amber-500 dark:text-cheezious-yellow" />
                 <span>Cloudflare KV Worker Sync Configuration</span>
               </h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="w-7 h-7 rounded-lg bg-[#222631] text-gray-400 hover:text-white flex items-center justify-center"
+                className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-[#222631] text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -139,7 +136,7 @@ export function CloudflareSyncBar({
 
             <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
               <div>
-                <label className="text-cheezious-textLight font-semibold block mb-1">
+                <label className="text-neutral-700 dark:text-cheezious-textLight font-semibold block mb-1">
                   Worker API Endpoint URL
                 </label>
                 <input
@@ -147,20 +144,20 @@ export function CloudflareSyncBar({
                   value={apiUrlInput}
                   onChange={(e) => setApiUrlInput(e.target.value)}
                   placeholder="https://restaurant-api.<your-subdomain>.workers.dev/api/shop/cheezious"
-                  className="w-full bg-[#111317] text-white text-xs px-3.5 py-2.5 rounded-xl border border-[#222631] focus:border-cheezious-yellow focus:outline-none"
+                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none"
                 />
-                <p className="text-[11px] text-cheezious-textMuted mt-1">
+                <p className="text-[11px] text-neutral-500 dark:text-cheezious-textMuted mt-1">
                   This endpoint receives GET requests to load menu items and POST requests with Authorization Bearer header when saving.
                 </p>
               </div>
 
-              <div className="p-3 bg-[#111317] rounded-xl border border-[#222631] space-y-1 text-cheezious-textMuted">
-                <div className="text-white font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="p-3 bg-gray-50 dark:bg-[#111317] rounded-xl border border-gray-200 dark:border-[#222631] space-y-1 text-neutral-600 dark:text-cheezious-textMuted">
+                <div className="text-neutral-900 dark:text-white font-semibold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                   <span>Deployment Worker Template</span>
                 </div>
                 <p className="text-[11px]">
-                  A pre-configured Cloudflare Worker script is included in the project under <code className="text-cheezious-yellow">cloudflare/worker.js</code>.
+                  A pre-configured Cloudflare Worker script is included in the project under <code className="text-amber-600 dark:text-cheezious-yellow font-bold">cloudflare/worker.js</code>.
                 </p>
               </div>
 
@@ -168,7 +165,7 @@ export function CloudflareSyncBar({
                 <button
                   type="button"
                   onClick={() => setShowSettings(false)}
-                  className="px-4 py-2 rounded-xl bg-[#222631] text-white font-semibold"
+                  className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#222631] text-neutral-700 dark:text-white font-semibold"
                 >
                   Cancel
                 </button>
