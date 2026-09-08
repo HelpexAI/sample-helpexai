@@ -64,14 +64,16 @@ export default function HomePage() {
 
   // Filter items based on active category and search
   const filteredItems = useMemo(() => {
-    return config.items.filter((item) => {
+    const itemsList = config.items || [];
+    return itemsList.filter((item) => {
       const matchesCategory =
-        activeCategory === "All Items" || item.category === activeCategory;
+        activeCategory === "All Items" ||
+        (item.category || "").toLowerCase().trim() === activeCategory.toLowerCase().trim();
       const matchesSearch =
         searchQuery.trim() === "" ||
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase());
+        (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.category || "").toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [config.items, activeCategory, searchQuery]);
@@ -81,11 +83,34 @@ export default function HomePage() {
     if (activeCategory !== "All Items" || searchQuery.trim() !== "") {
       return null;
     }
-    return config.categories.map((category) => ({
+    const categoriesList = config.categories || [];
+    const itemsList = config.items || [];
+    const categorySet = new Set(categoriesList.map((c) => c.toLowerCase().trim()));
+
+    const groups = categoriesList.map((category) => ({
       name: category,
-      items: config.items.filter((item) => item.category === category),
+      items: itemsList.filter(
+        (item) => (item.category || "").toLowerCase().trim() === category.toLowerCase().trim()
+      ),
     }));
+
+    // Find any uncategorized items so they never disappear
+    const uncategorized = itemsList.filter(
+      (item) => !categorySet.has((item.category || "").toLowerCase().trim())
+    );
+    if (uncategorized.length > 0) {
+      groups.push({
+        name: "More Dishes",
+        items: uncategorized,
+      });
+    }
+
+    return groups;
   }, [config.categories, config.items, activeCategory, searchQuery]);
+
+  const hasGroupedItems = useMemo(() => {
+    return groupedCategories ? groupedCategories.some((g) => g.items.length > 0) : false;
+  }, [groupedCategories]);
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] dark:bg-cheezious-bg text-neutral-900 dark:text-white flex flex-col selection:bg-cheezious-yellow selection:text-black transition-colors duration-200">
@@ -169,7 +194,7 @@ export default function HomePage() {
         {/* Loading Skeleton */}
         {isLoading ? (
           <StorefrontSkeleton />
-        ) : groupedCategories ? (
+        ) : groupedCategories && hasGroupedItems ? (
           /* Grouped by category view */
           <div className="space-y-12">
             {groupedCategories.map((group) => {

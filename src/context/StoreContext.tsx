@@ -37,7 +37,7 @@ interface StoreContextType {
   toggleTheme: () => void;
   // Sync
   isLoading: boolean;
-  refreshFromRemote: (silent?: boolean) => Promise<void>;
+  refreshFromRemote: (options?: { showToast?: boolean; showLoading?: boolean }) => Promise<void>;
   // Toast
   toasts: ToastInfo[];
   showToast: (message: string, type?: "success" | "error" | "info") => void;
@@ -83,32 +83,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const refreshFromRemote = useCallback(async (silent = false) => {
-    if (!silent) setIsLoading(true);
-    try {
-      const remote = await fetchRemoteStoreConfig();
-      if (remote) {
-        setConfigState(remote);
-        if (!silent) {
-          showToast("Refreshed live data from database", "success");
+  const refreshFromRemote = useCallback(
+    async (options?: { showToast?: boolean; showLoading?: boolean }) => {
+      const showToastMsg = options?.showToast ?? false;
+      const showLoadingIndicator = options?.showLoading ?? false;
+
+      if (showLoadingIndicator) setIsLoading(true);
+      try {
+        const remote = await fetchRemoteStoreConfig();
+        if (remote) {
+          setConfigState(remote);
+          if (showToastMsg) {
+            showToast("Refreshed live data from database", "success");
+          }
+        } else if (showToastMsg) {
+          showToast("Could not retrieve latest data from database", "error");
         }
-      } else if (!silent) {
-        showToast("Could not retrieve latest data from database", "error");
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      if (!silent) setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   // Initial load strictly from Cloudflare Worker KV
   useEffect(() => {
-    refreshFromRemote(true);
+    refreshFromRemote({ showLoading: true, showToast: false });
   }, [refreshFromRemote]);
 
   // Multi-tab synchronization and background revalidation
   useEffect(() => {
     const handleRevalidate = () => {
-      refreshFromRemote(true);
+      refreshFromRemote({ showLoading: false, showToast: false });
     };
 
     // 1. Revalidate on window focus (e.g. switching back from Admin tab to Storefront tab)

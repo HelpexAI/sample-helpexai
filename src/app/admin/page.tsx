@@ -173,7 +173,7 @@ export default function AdminPage() {
 
             {/* Refresh Remote */}
             <button
-              onClick={() => refreshFromRemote()}
+              onClick={() => refreshFromRemote({ showToast: true, showLoading: true })}
               className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-[#1A1D24] dark:hover:bg-[#222631] text-neutral-700 dark:text-cheezious-textMuted dark:hover:text-white border border-gray-200 dark:border-[#222631] transition-all active:scale-95"
               title="Pull latest live data from server"
             >
