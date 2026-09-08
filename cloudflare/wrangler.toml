@@ -1,0 +1,14 @@
+name = "restaurant-api"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+[vars]
+ADMIN_SECRET = "admin123"
+
+# Setup your KV namespace with:
+#   npx wrangler kv:namespace create CHEEZIOUS_KV
+# Then paste the returned id below:
+[[kv_namespaces]]
+binding = "CHEEZIOUS_KV"
+id = "<your-kv-namespace-id>"
+preview_id = "<your-preview-kv-id>"
