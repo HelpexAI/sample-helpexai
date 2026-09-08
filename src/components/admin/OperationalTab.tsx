@@ -16,7 +16,13 @@ import {
   RotateCcw,
   Check,
   Loader2,
+  Navigation,
+  Clock,
+  ExternalLink,
+  HelpCircle,
+  Eye,
 } from "lucide-react";
+import { extractMapEmbedUrl } from "@/components/LocationMapSection";
 
 interface OperationalTabProps {
   config: StoreConfig;
@@ -43,6 +49,12 @@ export function OperationalTab({
     selectedBranch: config.selectedBranch || "",
     currency: config.currency || "Rs.",
     bannerNotice: config.bannerNotice || "",
+    // Google Maps Location
+    showMapSection: config.showMapSection ?? true,
+    mapEmbedUrl: config.mapEmbedUrl || "",
+    mapTitle: config.mapTitle || "",
+    mapAddress: config.mapAddress || "",
+    mapTiming: config.mapTiming || "",
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -59,6 +71,11 @@ export function OperationalTab({
       selectedBranch: config.selectedBranch || "",
       currency: config.currency || "Rs.",
       bannerNotice: config.bannerNotice || "",
+      showMapSection: config.showMapSection ?? true,
+      mapEmbedUrl: config.mapEmbedUrl || "",
+      mapTitle: config.mapTitle || "",
+      mapAddress: config.mapAddress || "",
+      mapTiming: config.mapTiming || "",
     });
   }, [
     config.brandName,
@@ -69,6 +86,11 @@ export function OperationalTab({
     config.selectedBranch,
     config.currency,
     config.bannerNotice,
+    config.showMapSection,
+    config.mapEmbedUrl,
+    config.mapTitle,
+    config.mapAddress,
+    config.mapTiming,
   ]);
 
   // Check if form has unsaved modifications
@@ -81,7 +103,12 @@ export function OperationalTab({
       formData.deliveryFee !== (config.deliveryFee ?? 150) ||
       formData.selectedBranch !== (config.selectedBranch || "") ||
       formData.currency !== (config.currency || "Rs.") ||
-      formData.bannerNotice !== (config.bannerNotice || "")
+      formData.bannerNotice !== (config.bannerNotice || "") ||
+      formData.showMapSection !== (config.showMapSection ?? true) ||
+      formData.mapEmbedUrl !== (config.mapEmbedUrl || "") ||
+      formData.mapTitle !== (config.mapTitle || "") ||
+      formData.mapAddress !== (config.mapAddress || "") ||
+      formData.mapTiming !== (config.mapTiming || "")
     );
   }, [formData, config]);
 
@@ -106,6 +133,11 @@ export function OperationalTab({
         selectedBranch: formData.selectedBranch.trim(),
         currency: formData.currency.trim(),
         bannerNotice: formData.bannerNotice.trim(),
+        showMapSection: Boolean(formData.showMapSection),
+        mapEmbedUrl: extractMapEmbedUrl(formData.mapEmbedUrl),
+        mapTitle: formData.mapTitle.trim(),
+        mapAddress: formData.mapAddress.trim(),
+        mapTiming: formData.mapTiming.trim(),
       }));
 
       if (res?.success) {
@@ -128,6 +160,11 @@ export function OperationalTab({
       selectedBranch: config.selectedBranch || "",
       currency: config.currency || "Rs.",
       bannerNotice: config.bannerNotice || "",
+      showMapSection: config.showMapSection ?? true,
+      mapEmbedUrl: config.mapEmbedUrl || "",
+      mapTitle: config.mapTitle || "",
+      mapAddress: config.mapAddress || "",
+      mapTiming: config.mapTiming || "",
     });
   };
 
@@ -336,6 +373,194 @@ export function OperationalTab({
             className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow"
           />
         </div>
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* Google Maps Location & Directions Embed Settings Card */}
+      {/* ------------------------------------------------------------- */}
+      <div className="bg-white dark:bg-[#1A1D24] p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-[#222631] space-y-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-[#222631] pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-cheezious-yellow">
+                <Navigation className="w-4 h-4" />
+              </div>
+              <h4 className="text-base font-bold text-neutral-900 dark:text-white">
+                Google Maps Clinic / Branch Embed & Directions
+              </h4>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-cheezious-textMuted pl-10">
+              Embed your live branch or clinic map on the storefront under the Menu with interactive navigation directions.
+            </p>
+          </div>
+
+          {/* Toggle Switch */}
+          <div className="flex items-center gap-3 pl-10 sm:pl-0">
+            <span className="text-xs font-bold text-neutral-700 dark:text-cheezious-textLight">
+              {formData.showMapSection ? "Section Visible" : "Section Hidden"}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={formData.showMapSection}
+              onClick={() => handleFieldChange("showMapSection", !formData.showMapSection)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-cheezious-yellow focus:ring-offset-2 ${
+                formData.showMapSection ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-700"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  formData.showMapSection ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {formData.showMapSection && (
+          <div className="space-y-6">
+            {/* Step-by-Step Guidance Box */}
+            <div className="bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/30 rounded-2xl p-4 sm:p-5 space-y-3">
+              <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-xs sm:text-sm">
+                <HelpCircle className="w-4 h-4 text-amber-600 dark:text-cheezious-yellow shrink-0" />
+                <span>How to get your Google Maps Embed Code (Step-by-Step)</span>
+              </div>
+              <ol className="text-xs text-neutral-700 dark:text-neutral-300 space-y-1.5 list-decimal list-inside leading-relaxed font-medium pl-1">
+                <li>
+                  Open{" "}
+                  <a
+                    href="https://maps.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-700 dark:text-cheezious-yellow underline font-bold inline-flex items-center gap-0.5"
+                  >
+                    Google Maps <ExternalLink className="w-2.5 h-2.5" />
+                  </a>{" "}
+                  and search for your restaurant, branch, or clinic location.
+                </li>
+                <li>
+                  Click the <strong>&quot;Share&quot;</strong> button on your location&apos;s details panel.
+                </li>
+                <li>
+                  In the popup dialog, click the <strong>&quot;Embed a map&quot;</strong> tab.
+                </li>
+                <li>
+                  Click the <strong>&quot;COPY HTML&quot;</strong> button.
+                </li>
+                <li>
+                  Paste it into the <strong>Google Maps Embed Code</strong> input below (you can paste the full <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-[11px]">&lt;iframe ...&gt;</code> code or just the URL — our system extracts the clean link automatically!).
+                </li>
+              </ol>
+            </div>
+
+            {/* Embed Inputs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              {/* Embed Code / URL */}
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-cheezious-textLight flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Navigation className="w-3.5 h-3.5 text-amber-500 dark:text-cheezious-yellow" />
+                    <span>Google Maps Embed Code or URL</span>
+                  </span>
+                  <span className="text-[11px] text-neutral-500 font-normal">
+                    Supports raw URL or full &lt;iframe&gt; paste
+                  </span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.mapEmbedUrl}
+                  onChange={(e) => {
+                    const cleaned = extractMapEmbedUrl(e.target.value);
+                    handleFieldChange("mapEmbedUrl", cleaned);
+                  }}
+                  placeholder='Paste https://www.google.com/maps/embed?... or full <iframe src="..." ...></iframe>'
+                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-xs sm:text-sm font-mono px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow resize-none"
+                />
+              </div>
+
+              {/* Map Title */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-cheezious-textLight flex items-center gap-1.5">
+                  <Store className="w-3.5 h-3.5 text-amber-500 dark:text-cheezious-yellow" />
+                  <span>Section Display Title</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.mapTitle}
+                  onChange={(e) => handleFieldChange("mapTitle", e.target.value)}
+                  placeholder="e.g. Visit Our Main Branch / Clinic"
+                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow"
+                />
+              </div>
+
+              {/* Map Physical Address */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-cheezious-textLight flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-amber-500 dark:text-cheezious-yellow" />
+                  <span>Physical Address / Directions Landmark</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.mapAddress}
+                  onChange={(e) => handleFieldChange("mapAddress", e.target.value)}
+                  placeholder="e.g. Shop 1-4, Block 13-E, Jinnah Super, F-7 Markaz, Islamabad"
+                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow"
+                />
+              </div>
+
+              {/* Operating Hours / Timings */}
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-cheezious-textLight flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500 dark:text-cheezious-yellow" />
+                  <span>Working / Clinic Hours Note</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.mapTiming}
+                  onChange={(e) => handleFieldChange("mapTiming", e.target.value)}
+                  placeholder="e.g. Open Daily: 11:00 AM – 03:00 AM (Dine-in, Takeaway & Delivery)"
+                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow"
+                />
+              </div>
+            </div>
+
+            {/* Live Admin Interactive Map Preview */}
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-neutral-700 dark:text-cheezious-textLight flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-amber-500 dark:text-cheezious-yellow" />
+                  <span>Live Map Preview</span>
+                </span>
+                {formData.mapEmbedUrl && (
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Valid embed URL ready
+                  </span>
+                )}
+              </div>
+
+              {formData.mapEmbedUrl ? (
+                <div className="w-full h-64 sm:h-72 rounded-2xl overflow-hidden border border-gray-200 dark:border-[#222631] bg-gray-100 dark:bg-[#111317]">
+                  <iframe
+                    title="Admin Preview Google Map"
+                    src={extractMapEmbedUrl(formData.mapEmbedUrl)}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={true}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-36 rounded-2xl border-2 border-dashed border-gray-200 dark:border-[#222631] flex flex-col items-center justify-center p-4 text-center text-xs text-neutral-500 dark:text-cheezious-textMuted space-y-1">
+                  <Navigation className="w-6 h-6 text-gray-400 mb-1" />
+                  <span className="font-semibold">No embed code provided yet</span>
+                  <span>Follow the steps above to copy and paste your Google Map embed code.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom Save Bar when dirty */}

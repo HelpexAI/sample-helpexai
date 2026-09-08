@@ -22,6 +22,12 @@ export interface StoreConfig {
   deliveryFee: number;
   categories: string[];
   items: MenuItem[];
+  // Google Maps Clinic / Branch Embed
+  showMapSection?: boolean;
+  mapEmbedUrl?: string;
+  mapTitle?: string;
+  mapAddress?: string;
+  mapTiming?: string;
 }
 
 export const defaultCheezious: StoreConfig = {
@@ -34,6 +40,11 @@ export const defaultCheezious: StoreConfig = {
   bannerNotice: "🔥 Delivering Cheezy Khushiyan across Islamabad & Rawalpindi!",
   currency: "Rs.",
   deliveryFee: 150,
+  showMapSection: true,
+  mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3318.895315802138!2d73.0538!3d33.7198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38dfbfbc385fb9d1%3A0x6b820a4be35ce675!2sCheezious%20F-7!5e0!3m2!1sen!2s!4v1709999999999!5m2!1sen!2s",
+  mapTitle: "Visit Our Main Branch",
+  mapAddress: "Shop 1-4, Block 13-E, Jinnah Super Market, F-7 Markaz, Islamabad",
+  mapTiming: "Open Daily: 11:00 AM – 03:00 AM (Dine-in, Takeaway & Delivery)",
   categories: [
     "Special Pizza",
     "Somewhat Local",

@@ -9,6 +9,8 @@ import { CategoryNav } from "@/components/CategoryNav";
 import { FoodCard } from "@/components/FoodCard";
 import { ItemDetailModal } from "@/components/ItemDetailModal";
 import { CartDrawer } from "@/components/CartDrawer";
+import { LocationMapSection } from "@/components/LocationMapSection";
+import { ComparePlansSection } from "@/components/ComparePlansSection";
 import { Footer } from "@/components/Footer";
 import {
   Flame,
@@ -283,6 +285,9 @@ export default function HomePage() {
         )}
       </main>
 
+      {/* Google Maps Location & Directions Showcase (Controlled by Admin toggle) */}
+      <LocationMapSection />
+
       {/* Floating Bottom Cart Bar for Mobile */}
       {cartCount > 0 && (
         <div className="sm:hidden fixed bottom-4 inset-x-4 z-40">
@@ -312,6 +317,9 @@ export default function HomePage() {
 
       {/* Cart Drawer Modal */}
       <CartDrawer />
+
+      {/* Agency Pricing Comparison Plans */}
+      <ComparePlansSection />
 
       {/* Agency Showcase Callout at Footer */}
       <AgencyFooterBanner />
