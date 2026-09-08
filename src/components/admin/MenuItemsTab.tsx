@@ -13,11 +13,14 @@ import {
   Check,
   Ban,
   Filter,
+  Loader2,
 } from "lucide-react";
 
 interface MenuItemsTabProps {
   config: StoreConfig;
-  onChange: (updater: (prev: StoreConfig) => StoreConfig) => void;
+  onChange: (
+    updater: (prev: StoreConfig) => StoreConfig
+  ) => Promise<{ success: boolean; message?: string }> | void;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
 }
 
@@ -25,49 +28,61 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [modalItem, setModalItem] = useState<MenuItem | null | "NEW">(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Quick inline price editor state
-  const handlePriceChange = (itemId: string, newPrice: number) => {
+  const handlePriceChange = async (itemId: string, newPrice: number) => {
     if (isNaN(newPrice) || newPrice < 0) return;
-    onChange((prev) => ({
+    const res = await onChange((prev) => ({
       ...prev,
       items: prev.items.map((it) =>
         it.id === itemId ? { ...it, price: newPrice } : it
       ),
     }));
+    if (res?.success) {
+      showToast("Price updated in database", "success");
+    }
   };
 
   // Quick toggle stock
-  const handleToggleStock = (itemId: string) => {
-    onChange((prev) => ({
+  const handleToggleStock = async (itemId: string) => {
+    const item = config.items.find((it) => it.id === itemId);
+    const nextAvailability = !item?.isAvailable;
+    const res = await onChange((prev) => ({
       ...prev,
       items: prev.items.map((it) =>
         it.id === itemId ? { ...it, isAvailable: !it.isAvailable } : it
       ),
     }));
-    const item = config.items.find((it) => it.id === itemId);
-    if (item) {
+    if (res?.success && item) {
       showToast(
-        `${item.name} is now ${item.isAvailable ? "marked SOLD OUT" : "IN STOCK"}`,
+        `${item.name} is now ${nextAvailability ? "IN STOCK" : "marked SOLD OUT"}`,
         "info"
       );
     }
   };
 
   // Delete item
-  const handleDeleteItem = (item: MenuItem) => {
+  const handleDeleteItem = async (item: MenuItem) => {
     if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      onChange((prev) => ({
-        ...prev,
-        items: prev.items.filter((it) => it.id !== item.id),
-      }));
-      showToast(`Deleted ${item.name}`, "info");
+      setDeletingId(item.id);
+      try {
+        const res = await onChange((prev) => ({
+          ...prev,
+          items: prev.items.filter((it) => it.id !== item.id),
+        }));
+        if (res?.success) {
+          showToast(`Deleted "${item.name}" from database`, "info");
+        }
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
   // Save dish from modal (add or edit)
-  const handleSaveDish = (dish: MenuItem) => {
-    onChange((prev) => {
+  const handleSaveDish = async (dish: MenuItem) => {
+    const res = await onChange((prev) => {
       const exists = prev.items.some((it) => it.id === dish.id);
       if (exists) {
         return {
@@ -81,19 +96,23 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
         };
       }
     });
-    showToast(`Saved dish: ${dish.name}`, "success");
-    setModalItem(null);
+    if (res?.success) {
+      showToast(`Saved dish: ${dish.name}`, "success");
+      setModalItem(null);
+    }
   };
 
-  const handleAddCategoryFromDishModal = (newCategory: string) => {
+  const handleAddCategoryFromDishModal = async (newCategory: string) => {
     const trimmed = newCategory.trim();
     if (!trimmed) return;
     if (!config.categories.includes(trimmed)) {
-      onChange((prev) => ({
+      const res = await onChange((prev) => ({
         ...prev,
         categories: [...prev.categories, trimmed],
       }));
-      showToast(`Created category: "${trimmed}"`, "success");
+      if (res?.success) {
+        showToast(`Created category: "${trimmed}"`, "success");
+      }
     }
   };
 
@@ -273,11 +292,17 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
                   </button>
 
                   <button
+                    type="button"
+                    disabled={deletingId === item.id}
                     onClick={() => handleDeleteItem(item)}
-                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-rose-500 hover:bg-rose-500/10 transition-colors"
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-rose-500 hover:bg-rose-500/10 disabled:opacity-50 transition-colors"
                     title="Delete dish"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    {deletingId === item.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
                   </button>
                 </div>
               </div>

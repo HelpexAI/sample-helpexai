@@ -18,8 +18,10 @@ interface ToastInfo {
 interface StoreContextType {
   config: StoreConfig;
   setConfig: (config: StoreConfig) => void;
-  updateStoreConfig: (updater: (prev: StoreConfig) => StoreConfig) => void;
-  resetToDefaults: () => void;
+  updateStoreConfig: (
+    updater: (prev: StoreConfig) => StoreConfig
+  ) => Promise<{ success: boolean; message?: string }>;
+  resetToDefaults: () => Promise<void>;
   // Cart
   cart: CartItem[];
   addToCart: (item: MenuItem, qty?: number) => void;
@@ -35,7 +37,7 @@ interface StoreContextType {
   toggleTheme: () => void;
   // Sync
   isLoading: boolean;
-  refreshFromRemote: () => Promise<void>;
+  refreshFromRemote: (silent?: boolean) => Promise<void>;
   // Toast
   toasts: ToastInfo[];
   showToast: (message: string, type?: "success" | "error" | "info") => void;
@@ -81,21 +83,59 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const refreshFromRemote = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    try {
+      const remote = await fetchRemoteStoreConfig();
+      if (remote) {
+        setConfigState(remote);
+        if (!silent) {
+          showToast("Refreshed live data from database", "success");
+        }
+      } else if (!silent) {
+        showToast("Could not retrieve latest data from database", "error");
+      }
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
+  }, []);
+
   // Initial load strictly from Cloudflare Worker KV
   useEffect(() => {
-    fetchRemoteStoreConfig()
-      .then((remoteConfig) => {
-        if (remoteConfig) {
-          setConfigState(remoteConfig);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load initial data from Cloudflare Worker KV:", err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+    refreshFromRemote(true);
+  }, [refreshFromRemote]);
+
+  // Multi-tab synchronization and background revalidation
+  useEffect(() => {
+    const handleRevalidate = () => {
+      refreshFromRemote(true);
+    };
+
+    // 1. Revalidate on window focus (e.g. switching back from Admin tab to Storefront tab)
+    window.addEventListener("focus", handleRevalidate);
+
+    // 2. Revalidate when tab becomes visible
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        handleRevalidate();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    // 3. Revalidate immediately when an update occurs in another tab
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "cheezious_sync_event") {
+        handleRevalidate();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("focus", handleRevalidate);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [refreshFromRemote]);
 
   const setConfig = (newConfig: StoreConfig) => {
     setConfigState(newConfig);
@@ -105,61 +145,60 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateStoreConfig = (updater: (prev: StoreConfig) => StoreConfig) => {
-    setConfigState((prev) => {
-      const next = updater(prev);
-
-      // Automatically sync with remote Worker/KV whenever authenticated
-      const session = getAdminSession();
-      if (session && session.token) {
-        saveRemoteStoreConfig(next)
-          .then((res) => {
-            if (res.success) {
-              console.log("Auto-synced update to database:", res.message);
-            } else if (res.isUnauthorized) {
-              showToast("Session expired. Please sign in again.", "error");
-            } else {
-              showToast(res.message, "error");
-            }
-          })
-          .catch((err) => {
-            console.error("Database sync error:", err);
-            showToast("Failed to sync changes with database", "error");
-          });
-      }
-
-      return next;
-    });
-  };
-
-  const resetToDefaults = () => {
-    setConfigState(defaultCheezious);
+  const updateStoreConfig = async (
+    updater: (prev: StoreConfig) => StoreConfig
+  ): Promise<{ success: boolean; message?: string }> => {
     const session = getAdminSession();
-    if (session && session.token) {
-      saveRemoteStoreConfig(defaultCheezious)
-        .then((res) => {
-          if (res.success) {
-            showToast("Reset all store settings and synced to database", "success");
-          } else {
-            showToast(res.message, "error");
-          }
-        })
-        .catch(console.error);
-    } else {
-      showToast("Reset menu items to default state.", "info");
+    if (!session || !session.token) {
+      showToast("Authentication required. Please sign in to save changes.", "error");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("cheezious_session_expired"));
+      }
+      return { success: false, message: "Authentication required" };
+    }
+
+    const nextConfig = updater(config);
+
+    try {
+      const res = await saveRemoteStoreConfig(nextConfig);
+      if (res.success) {
+        setConfigState(nextConfig);
+        return { success: true, message: res.message };
+      } else if (res.isUnauthorized) {
+        showToast("Session expired. Please sign in again.", "error");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("cheezious_session_expired"));
+        }
+        return { success: false, message: res.message };
+      } else {
+        showToast(res.message || "Failed to save changes to database", "error");
+        return { success: false, message: res.message };
+      }
+    } catch (err: any) {
+      console.error("Database sync error:", err);
+      showToast("Failed to sync changes with database", "error");
+      return { success: false, message: err?.message || "Network error" };
     }
   };
 
-  const refreshFromRemote = async () => {
-    setIsLoading(true);
-    const remote = await fetchRemoteStoreConfig();
-    if (remote) {
-      setConfigState(remote);
-      showToast("Refreshed live data from database", "success");
-    } else {
-      showToast("Could not retrieve latest data from database", "error");
+  const resetToDefaults = async () => {
+    const session = getAdminSession();
+    if (!session || !session.token) {
+      showToast("Authentication required to reset store settings.", "error");
+      return;
     }
-    setIsLoading(false);
+    try {
+      const res = await saveRemoteStoreConfig(defaultCheezious);
+      if (res.success) {
+        setConfigState(defaultCheezious);
+        showToast("Reset all store settings and synced to database", "success");
+      } else {
+        showToast(res.message, "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to reset store settings", "error");
+    }
   };
 
   // Cart Management

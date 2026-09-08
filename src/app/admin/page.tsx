@@ -48,7 +48,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"items" | "categories" | "operations">("items");
   const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
 
-  // Read isolated sessionStorage on mount to verify session validity
+  // Read isolated session on mount to verify session validity
   useEffect(() => {
     const session = getAdminSession();
     if (session && session.token) {
@@ -58,6 +58,17 @@ export default function AdminPage() {
       setIsAuthenticated(false);
     }
     setIsCheckingSession(false);
+
+    const onSessionExpired = () => {
+      clearAdminSession();
+      setUsername("");
+      setIsAuthenticated(false);
+    };
+
+    window.addEventListener("cheezious_session_expired", onSessionExpired);
+    return () => {
+      window.removeEventListener("cheezious_session_expired", onSessionExpired);
+    };
   }, []);
 
   const handleAuthenticated = (token: string, authedUser: string) => {
@@ -162,7 +173,7 @@ export default function AdminPage() {
 
             {/* Refresh Remote */}
             <button
-              onClick={refreshFromRemote}
+              onClick={() => refreshFromRemote()}
               className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-[#1A1D24] dark:hover:bg-[#222631] text-neutral-700 dark:text-cheezious-textMuted dark:hover:text-white border border-gray-200 dark:border-[#222631] transition-all active:scale-95"
               title="Pull latest live data from server"
             >

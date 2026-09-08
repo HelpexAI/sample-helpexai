@@ -36,13 +36,17 @@ export function setCustomApiUrl(url: string) {
 export function getAdminSession(): { token: string; username: string } | null {
   if (typeof window === "undefined") return null;
   try {
-    const token = sessionStorage.getItem(SESSION_TOKEN_KEY);
-    const username = sessionStorage.getItem(SESSION_USER_KEY) || "admin";
+    let token = sessionStorage.getItem(SESSION_TOKEN_KEY);
+    let username = sessionStorage.getItem(SESSION_USER_KEY);
+    if (!token || !token.trim()) {
+      token = localStorage.getItem(SESSION_TOKEN_KEY);
+      username = localStorage.getItem(SESSION_USER_KEY);
+    }
     if (token && token.trim().length > 0) {
-      return { token: token.trim(), username };
+      return { token: token.trim(), username: username || "admin" };
     }
   } catch (err) {
-    console.error("Failed to read admin session from sessionStorage:", err);
+    console.error("Failed to read admin session:", err);
   }
   return null;
 }
@@ -52,8 +56,10 @@ export function setAdminSession(token: string, username: string): void {
   try {
     sessionStorage.setItem(SESSION_TOKEN_KEY, token);
     sessionStorage.setItem(SESSION_USER_KEY, username);
+    localStorage.setItem(SESSION_TOKEN_KEY, token);
+    localStorage.setItem(SESSION_USER_KEY, username);
   } catch (err) {
-    console.error("Failed to write admin session to sessionStorage:", err);
+    console.error("Failed to write admin session:", err);
   }
 }
 
@@ -62,8 +68,10 @@ export function clearAdminSession(): void {
   try {
     sessionStorage.removeItem(SESSION_TOKEN_KEY);
     sessionStorage.removeItem(SESSION_USER_KEY);
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+    localStorage.removeItem(SESSION_USER_KEY);
   } catch (err) {
-    console.error("Failed to clear admin session from sessionStorage:", err);
+    console.error("Failed to clear admin session:", err);
   }
 }
 
@@ -218,6 +226,9 @@ export async function saveRemoteStoreConfig(
 
     if (res.status === 401) {
       clearAdminSession();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("cheezious_session_expired"));
+      }
       return {
         success: false,
         isUnauthorized: true,
@@ -226,6 +237,9 @@ export async function saveRemoteStoreConfig(
     }
 
     if (res.ok) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cheezious_sync_event", Date.now().toString());
+      }
       return {
         success: true,
         message: "Changes saved live to database!",

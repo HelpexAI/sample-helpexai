@@ -6,7 +6,9 @@ import { Layers, Plus, Trash2, ArrowUp, ArrowDown, Edit2, Check, X } from "lucid
 
 interface CategoryTabProps {
   config: StoreConfig;
-  onChange: (updater: (prev: StoreConfig) => StoreConfig) => void;
+  onChange: (
+    updater: (prev: StoreConfig) => StoreConfig
+  ) => Promise<{ success: boolean; message?: string }> | void;
   showToast?: (message: string, type?: "success" | "error" | "info") => void;
 }
 
@@ -17,7 +19,7 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
   const [editCatName, setEditCatName] = useState("");
   const [error, setError] = useState("");
 
-  const handleAddCategory = (e: React.FormEvent) => {
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newCatName.trim();
     if (!trimmed) {
@@ -29,13 +31,15 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
       return;
     }
     setError("");
-    onChange((prev) => ({
+    const res = await onChange((prev) => ({
       ...prev,
       categories: [...prev.categories, trimmed],
     }));
-    setNewCatName("");
-    setIsAddModalOpen(false);
-    showToast?.(`Category "${trimmed}" created and saved live!`, "success");
+    if (res?.success) {
+      setNewCatName("");
+      setIsAddModalOpen(false);
+      showToast?.(`Category "${trimmed}" created and saved live!`, "success");
+    }
   };
 
   const handleStartEdit = (index: number) => {
@@ -43,13 +47,13 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
     setEditCatName(config.categories[index]);
   };
 
-  const handleSaveEdit = (index: number) => {
+  const handleSaveEdit = async (index: number) => {
     const trimmed = editCatName.trim();
     if (!trimmed) return;
     const oldName = config.categories[index];
 
     // Update categories array & update any items with the old category name
-    onChange((prev) => ({
+    const res = await onChange((prev) => ({
       ...prev,
       categories: prev.categories.map((c, i) => (i === index ? trimmed : c)),
       items: prev.items.map((it) =>
@@ -57,12 +61,14 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
       ),
     }));
 
-    setEditingIndex(null);
-    setEditCatName("");
-    showToast?.(`Category renamed to "${trimmed}" & saved live!`, "success");
+    if (res?.success) {
+      setEditingIndex(null);
+      setEditCatName("");
+      showToast?.(`Category renamed to "${trimmed}" & saved live!`, "success");
+    }
   };
 
-  const handleDeleteCategory = (index: number) => {
+  const handleDeleteCategory = async (index: number) => {
     const catToDelete = config.categories[index];
     const itemsUsing = config.items.filter((it) => it.category === catToDelete).length;
 
@@ -75,18 +81,20 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
       return;
     }
 
-    onChange((prev) => ({
+    const res = await onChange((prev) => ({
       ...prev,
       categories: prev.categories.filter((_, i) => i !== index),
     }));
-    showToast?.(`Category "${catToDelete}" deleted & updated live!`, "info");
+    if (res?.success) {
+      showToast?.(`Category "${catToDelete}" deleted & updated live!`, "info");
+    }
   };
 
-  const handleMove = (index: number, direction: "up" | "down") => {
+  const handleMove = async (index: number, direction: "up" | "down") => {
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= config.categories.length) return;
 
-    onChange((prev) => {
+    const res = await onChange((prev) => {
       const nextCategories = [...prev.categories];
       const temp = nextCategories[index];
       nextCategories[index] = nextCategories[targetIndex];
@@ -96,7 +104,9 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
         categories: nextCategories,
       };
     });
-    showToast?.("Category reordered & saved live!", "info");
+    if (res?.success) {
+      showToast?.("Category reordered & saved live!", "info");
+    }
   };
 
   return (
