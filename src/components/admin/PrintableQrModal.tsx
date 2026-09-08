@@ -285,9 +285,8 @@ export function PrintableQrModal({
       ctx.fillText("🔥 Delivering Cheezy Khushiyan!", width / 2, height - 40);
     } catch (err: any) {
       console.error("Failed to render QR Code:", err);
-      showToast("Could not generate QR Code: " + (err?.message || "Error"), "error");
     }
-  }, [isOpen, effectiveUrl, cardTheme, tableNumber, config, showToast]);
+  }, [isOpen, effectiveUrl, cardTheme, tableNumber, config]);
 
   if (!isOpen) return null;
 

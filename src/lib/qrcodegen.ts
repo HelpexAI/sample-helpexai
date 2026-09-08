@@ -66,11 +66,10 @@ export class QrCode {
     mask: number
   ) {
     if (version < 1 || version > 40) throw new RangeError("Version value out of range");
-    if (mask < 0 || mask > 7) throw new RangeError("Mask value out of range");
+    if (mask < -1 || mask > 7) throw new RangeError("Mask value out of range");
     this.version = version;
     this.size = version * 4 + 17;
     this.errorCorrectionLevel = ecl;
-    this.mask = mask;
 
     // Initialize module grids
     this.modules = [];
@@ -103,7 +102,6 @@ export class QrCode {
     }
     this.applyMask(mask);
     this.drawFormatBits(mask);
-    // @ts-ignore
     this.mask = mask;
   }
 

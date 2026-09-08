@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { MenuItem, StoreConfig, defaultCheezious } from "@/data/defaultCheezious";
 import {
   fetchRemoteStoreConfig,
@@ -207,17 +207,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   // Toast System
-  const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      removeToast(id);
-    }, 4000);
-  };
-
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
+
+  const showToast = useCallback(
+    (message: string, type: "success" | "error" | "info" = "info") => {
+      const id = Math.random().toString(36).substring(2, 9);
+      setToasts((prev) => {
+        // Prevent duplicate toast spam
+        if (prev.some((t) => t.message === message)) return prev;
+        return [...prev, { id, message, type }];
+      });
+      setTimeout(() => {
+        removeToast(id);
+      }, 4000);
+    },
+    [removeToast]
+  );
 
   return (
     <StoreContext.Provider
