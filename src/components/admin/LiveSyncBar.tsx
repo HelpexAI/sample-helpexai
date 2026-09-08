@@ -70,10 +70,10 @@ export function LiveSyncBar({
           <div className="flex items-center gap-2.5 text-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              Live Cloudflare Worker KV Sync Active
+              Live Database Sync Active
             </span>
             <span className="text-neutral-500 dark:text-cheezious-textMuted hidden md:inline">
-              Mutations are authenticated and written directly to KV database.
+              Mutations are authenticated and written directly to Backend database.
             </span>
           </div>
 

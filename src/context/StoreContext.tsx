@@ -115,7 +115,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         saveRemoteStoreConfig(next)
           .then((res) => {
             if (res.success) {
-              console.log("Auto-synced update to Cloudflare Worker KV:", res.message);
+              console.log("Auto-synced update to database:", res.message);
             } else if (res.isUnauthorized) {
               showToast("Session expired. Please sign in again.", "error");
             } else {
@@ -123,8 +123,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             }
           })
           .catch((err) => {
-            console.error("KV sync error:", err);
-            showToast("Failed to sync changes with Cloudflare Worker KV", "error");
+            console.error("Database sync error:", err);
+            showToast("Failed to sync changes with database", "error");
           });
       }
 
@@ -139,7 +139,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       saveRemoteStoreConfig(defaultCheezious)
         .then((res) => {
           if (res.success) {
-            showToast("Reset all store settings and synced to Cloudflare Worker KV", "success");
+            showToast("Reset all store settings and synced to database", "success");
           } else {
             showToast(res.message, "error");
           }
@@ -155,9 +155,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const remote = await fetchRemoteStoreConfig();
     if (remote) {
       setConfigState(remote);
-      showToast("Refreshed live data from Cloudflare Worker KV", "success");
+      showToast("Refreshed live data from database", "success");
     } else {
-      showToast("Could not retrieve latest data from Cloudflare Worker KV", "error");
+      showToast("Could not retrieve latest data from database", "error");
     }
     setIsLoading(false);
   };

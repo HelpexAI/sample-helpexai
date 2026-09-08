@@ -108,7 +108,7 @@ export async function loginAdmin(
           success: true,
           token: data.token,
           username,
-          message: "Signed in successfully with Cloudflare Worker!",
+          message: "Signed in successfully with Backend!",
         };
       }
     }
@@ -119,7 +119,7 @@ export async function loginAdmin(
   } catch (err: any) {
     return {
       success: false,
-      message: `Failed to connect to Cloudflare Worker: ${err?.message || "Network error"}. Check API URL.`,
+      message: `Failed to connect to Backend: ${err?.message || "Network error"}. Check API URL.`,
     };
   }
 }
@@ -228,7 +228,7 @@ export async function saveRemoteStoreConfig(
     if (res.ok) {
       return {
         success: true,
-        message: "Changes saved live to Cloudflare Worker KV!",
+        message: "Changes saved live to database!",
       };
     } else {
       const errText = await res.text().catch(() => "");
@@ -242,7 +242,7 @@ export async function saveRemoteStoreConfig(
   } catch (err: any) {
     return {
       success: false,
-      message: `Failed to persist to Cloudflare Worker KV: ${err?.message || "Network error"}`,
+      message: `Failed to persist to database: ${err?.message || "Network error"}`,
     };
   }
 }
