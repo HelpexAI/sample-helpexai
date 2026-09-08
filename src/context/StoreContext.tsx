@@ -6,6 +6,8 @@ import {
   getLocalStoreConfig,
   saveLocalStoreConfig,
   fetchRemoteStoreConfig,
+  saveRemoteStoreConfig,
+  getAdminSession,
 } from "@/lib/kvSync";
 import { CartItem } from "@/lib/whatsapp";
 
@@ -97,23 +99,74 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       .finally(() => {
         setIsLoading(false);
       });
+
+    // 3. Multi-tab synchronization
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "cheezious_store_config" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && Array.isArray(parsed.items) && Array.isArray(parsed.categories)) {
+            setConfigState(parsed);
+          }
+        } catch (err) {
+          console.error("Failed to parse storage update:", err);
+        }
+      }
+    };
+
+    // 4. Revalidate on window focus when switching between tabs
+    const handleFocus = () => {
+      const freshLocal = getLocalStoreConfig();
+      setConfigState(freshLocal);
+      fetchRemoteStoreConfig().then((remote) => {
+        if (remote) setConfigState(remote);
+      });
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
   const setConfig = (newConfig: StoreConfig) => {
     setConfigState(newConfig);
     saveLocalStoreConfig(newConfig);
+    const session = getAdminSession();
+    if (session && session.token) {
+      saveRemoteStoreConfig(newConfig).catch(console.error);
+    }
   };
 
   const updateStoreConfig = (updater: (prev: StoreConfig) => StoreConfig) => {
     setConfigState((prev) => {
       const next = updater(prev);
       saveLocalStoreConfig(next);
+
+      // Automatically sync with remote Worker/KV whenever authenticated
+      const session = getAdminSession();
+      if (session && session.token) {
+        saveRemoteStoreConfig(next).then((res) => {
+          if (res.success) {
+            console.log("Auto-synced update to live server:", res.message);
+          } else if (res.isUnauthorized) {
+            showToast("Session expired. Please sign in again.", "error");
+          }
+        }).catch(console.error);
+      }
+
       return next;
     });
   };
 
   const resetToDefaults = () => {
     setConfig(defaultCheezious);
+    const session = getAdminSession();
+    if (session && session.token) {
+      saveRemoteStoreConfig(defaultCheezious).catch(console.error);
+    }
     showToast("Reset all store settings and menu items to Cheezious defaults", "info");
   };
 

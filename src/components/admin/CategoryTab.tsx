@@ -7,9 +7,10 @@ import { Layers, Plus, Trash2, ArrowUp, ArrowDown, Edit2, Check, X } from "lucid
 interface CategoryTabProps {
   config: StoreConfig;
   onChange: (updater: (prev: StoreConfig) => StoreConfig) => void;
+  showToast?: (message: string, type?: "success" | "error" | "info") => void;
 }
 
-export function CategoryTab({ config, onChange }: CategoryTabProps) {
+export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
   const [newCatName, setNewCatName] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -34,6 +35,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
     }));
     setNewCatName("");
     setIsAddModalOpen(false);
+    showToast?.(`Category "${trimmed}" created and saved live!`, "success");
   };
 
   const handleStartEdit = (index: number) => {
@@ -57,6 +59,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
 
     setEditingIndex(null);
     setEditCatName("");
+    showToast?.(`Category renamed to "${trimmed}" & saved live!`, "success");
   };
 
   const handleDeleteCategory = (index: number) => {
@@ -76,6 +79,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
       ...prev,
       categories: prev.categories.filter((_, i) => i !== index),
     }));
+    showToast?.(`Category "${catToDelete}" deleted & updated live!`, "info");
   };
 
   const handleMove = (index: number, direction: "up" | "down") => {
@@ -92,6 +96,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
         categories: nextCategories,
       };
     });
+    showToast?.("Category reordered & saved live!", "info");
   };
 
   return (

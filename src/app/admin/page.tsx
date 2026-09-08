@@ -244,7 +244,7 @@ export default function AdminPage() {
           )}
 
           {activeTab === "categories" && (
-            <CategoryTab config={config} onChange={updateStoreConfig} />
+            <CategoryTab config={config} onChange={updateStoreConfig} showToast={showToast} />
           )}
 
           {activeTab === "operations" && (

@@ -178,16 +178,20 @@ export function saveLocalStoreConfig(config: StoreConfig): void {
 // ---------------------------------------------------------------------------
 
 export async function fetchRemoteStoreConfig(): Promise<StoreConfig | null> {
-  const url = getEffectiveApiUrl();
+  const baseUrl = getEffectiveApiUrl();
+  const fetchUrl = `${baseUrl}?_t=${Date.now()}`;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
 
-    const res = await fetch(url, {
+    const res = await fetch(fetchUrl, {
       method: "GET",
       headers: {
         Accept: "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
       },
+      cache: "no-store",
       signal: controller.signal,
     });
 
@@ -233,13 +237,18 @@ export async function saveRemoteStoreConfig(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+    const payload = {
+      ...config,
+      shopId: "cheezious",
+    };
+
     let res = await fetch(saveUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.token}`,
       },
-      body: JSON.stringify(config),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
 
@@ -251,7 +260,7 @@ export async function saveRemoteStoreConfig(
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.token}`,
         },
-        body: JSON.stringify(config),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
     }
@@ -270,7 +279,7 @@ export async function saveRemoteStoreConfig(
     if (res.ok) {
       return {
         success: true,
-        message: "Menu updated globally across all devices!",
+        message: "Changes saved live to database!",
       };
     } else {
       const errText = await res.text().catch(() => "");
