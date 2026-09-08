@@ -117,7 +117,7 @@ export async function loginAdmin(
       return { success: false, message: errMsg };
     }
   } catch (err: any) {
-    // Graceful fallback for offline demo / unprovisioned worker endpoint
+    // Graceful fallback for offline demo / unprovisioned backend endpoint
     console.warn("Remote login endpoint error, checking demo credentials:", err);
     if (
       (username === "admin" && password === "admin123") ||
@@ -136,7 +136,7 @@ export async function loginAdmin(
     return {
       success: false,
       message:
-        "Unable to connect to Cloudflare Worker login endpoint. Use demo credentials (admin / admin123) or verify your worker URL.",
+        "Unable to connect to login endpoint. Use demo credentials (admin / admin123) or verify your API URL.",
     };
   }
 }
@@ -201,7 +201,7 @@ export async function fetchRemoteStoreConfig(): Promise<StoreConfig | null> {
       }
     }
   } catch (err) {
-    console.warn("Could not fetch remote Cloudflare KV config, using local fallback:", err);
+    console.warn("Could not fetch remote store config, using local fallback:", err);
   }
   return null;
 }
@@ -276,7 +276,7 @@ export async function saveRemoteStoreConfig(
       const errText = await res.text().catch(() => "");
       return {
         success: false,
-        message: `Saved locally! Cloudflare Worker responded with ${res.status}: ${
+        message: `Saved locally! Server responded with ${res.status}: ${
           errText || "Authorization failed or endpoint unreachable."
         }`,
       };
@@ -284,7 +284,7 @@ export async function saveRemoteStoreConfig(
   } catch (err: any) {
     return {
       success: true,
-      message: `Changes saved locally in browser! (Cloudflare Worker at ${saveUrl} was unreachable: ${
+      message: `Changes saved locally in browser! (API endpoint at ${saveUrl} was unreachable: ${
         err?.message || "Network error"
       })`,
     };

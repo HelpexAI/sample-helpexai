@@ -12,7 +12,7 @@ import { AdminAuthModal } from "@/components/admin/AdminAuthModal";
 import { OperationalTab } from "@/components/admin/OperationalTab";
 import { CategoryTab } from "@/components/admin/CategoryTab";
 import { MenuItemsTab } from "@/components/admin/MenuItemsTab";
-import { CloudflareSyncBar } from "@/components/admin/CloudflareSyncBar";
+import { LiveSyncBar } from "@/components/admin/LiveSyncBar";
 import {
   Crown,
   ArrowLeft,
@@ -124,9 +124,6 @@ export default function AdminPage() {
                     Live Admin
                   </span>
                 </h1>
-                <p className="text-[10px] text-neutral-500 dark:text-cheezious-textMuted mt-0.5 hidden sm:block">
-                  Cloudflare Worker + KV Synchronized
-                </p>
               </div>
             </div>
           </div>
@@ -163,9 +160,8 @@ export default function AdminPage() {
             {/* Refresh Remote */}
             <button
               onClick={refreshFromRemote}
-              disabled={isLoading}
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-[#1A1D24] dark:hover:bg-[#222631] text-neutral-700 hover:text-neutral-900 dark:text-cheezious-textMuted dark:hover:text-white border border-gray-200 dark:border-[#222631] text-xs font-semibold flex items-center gap-1.5 transition-colors"
-              title="Pull latest data from Cloudflare KV"
+              className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-[#1A1D24] dark:hover:bg-[#222631] text-neutral-700 dark:text-cheezious-textMuted dark:hover:text-white border border-gray-200 dark:border-[#222631] transition-all active:scale-95"
+              title="Pull latest live data from server"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
@@ -257,8 +253,8 @@ export default function AdminPage() {
         </div>
       </main>
 
-      {/* Global Cloudflare KV Push Action Bar */}
-      <CloudflareSyncBar
+      {/* Live Sync Action Bar */}
+      <LiveSyncBar
         config={config}
         onReset={resetToDefaults}
         showToast={showToast}

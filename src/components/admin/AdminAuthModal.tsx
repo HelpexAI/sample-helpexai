@@ -66,7 +66,7 @@ export function AdminAuthModal({ onAuthenticated }: AdminAuthModalProps) {
             Cheezious Admin Portal
           </h2>
           <p className="text-xs text-neutral-500 dark:text-cheezious-textMuted max-w-xs mx-auto">
-            Sign in with your Cloudflare KV credentials to manage menu dishes, prices, and store settings.
+            Sign in with your admin credentials to manage menu dishes, prices, and store settings.
           </p>
         </div>
 

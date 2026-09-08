@@ -87,7 +87,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const localConfig = getLocalStoreConfig();
     setConfigState(localConfig);
 
-    // 2. Fetch remote Cloudflare KV in background
+    // 2. Fetch remote live store data in background
     fetchRemoteStoreConfig()
       .then((remoteConfig) => {
         if (remoteConfig) {
@@ -122,7 +122,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const remote = await fetchRemoteStoreConfig();
     if (remote) {
       setConfigState(remote);
-      showToast("Updated from Cloudflare KV", "success");
+      showToast("Updated from live database", "success");
     } else {
       showToast("No remote updates found. Using local configuration.", "info");
     }

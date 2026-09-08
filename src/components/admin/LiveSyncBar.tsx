@@ -16,19 +16,19 @@ import {
   Loader2,
 } from "lucide-react";
 
-interface CloudflareSyncBarProps {
+interface LiveSyncBarProps {
   config: StoreConfig;
   onReset: () => void;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
   onSessionExpired?: () => void;
 }
 
-export function CloudflareSyncBar({
+export function LiveSyncBar({
   config,
   onReset,
   showToast,
   onSessionExpired,
-}: CloudflareSyncBarProps) {
+}: LiveSyncBarProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [apiUrlInput, setApiUrlInput] = useState(getEffectiveApiUrl());
@@ -59,7 +59,7 @@ export function CloudflareSyncBar({
     e.preventDefault();
     setCustomApiUrl(apiUrlInput);
     setShowSettings(false);
-    showToast("Cloudflare Worker Endpoint updated!", "success");
+    showToast("API Endpoint updated!", "success");
   };
 
   return (
@@ -73,7 +73,7 @@ export function CloudflareSyncBar({
               Changes auto-saved in local cache.
             </span>
             <span className="text-neutral-500 dark:text-cheezious-textMuted hidden md:inline">
-              Dispatches authenticated POST /save to Cloudflare Worker.
+              Dispatches authenticated updates to live database.
             </span>
           </div>
 
@@ -102,8 +102,8 @@ export function CloudflareSyncBar({
               type="button"
               onClick={() => setShowSettings(true)}
               className="p-2 rounded-xl bg-gray-100 dark:bg-[#222631] hover:bg-gray-200 dark:hover:bg-[#2D3342] text-neutral-700 dark:text-cheezious-textMuted hover:text-neutral-900 dark:hover:text-white text-xs font-semibold transition-colors"
-              title="Worker Endpoint Settings"
-              aria-label="Worker Endpoint Settings"
+              title="API Endpoint Settings"
+              aria-label="API Endpoint Settings"
             >
               <Settings className="w-4 h-4" />
             </button>
@@ -118,12 +118,12 @@ export function CloudflareSyncBar({
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 text-black animate-spin" />
-                  <span>Saving to KV...</span>
+                  <span>Publishing Changes...</span>
                 </>
               ) : (
                 <>
                   <Cloud className="w-4 h-4 text-black" />
-                  <span>Push Changes Live to Cloudflare</span>
+                  <span>Push Changes Live</span>
                 </>
               )}
             </button>
@@ -131,14 +131,14 @@ export function CloudflareSyncBar({
         </div>
       </div>
 
-      {/* Cloudflare Endpoint Settings Modal */}
+      {/* Endpoint Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 transition-colors duration-200">
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#222631] pb-3">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                 <Settings className="w-4 h-4 text-amber-500 dark:text-cheezious-yellow" />
-                <span>Cloudflare Worker & KV Configuration</span>
+                <span>Live Sync API Configuration</span>
               </h3>
               <button
                 onClick={() => setShowSettings(false)}
@@ -151,7 +151,7 @@ export function CloudflareSyncBar({
             <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
               <div>
                 <label className="text-neutral-700 dark:text-cheezious-textLight font-semibold block mb-1">
-                  Base Worker URL
+                  Base API URL
                 </label>
                 <input
                   type="url"
@@ -168,10 +168,10 @@ export function CloudflareSyncBar({
               <div className="p-3 bg-gray-50 dark:bg-[#111317] rounded-xl border border-gray-200 dark:border-[#222631] space-y-1 text-neutral-600 dark:text-cheezious-textMuted">
                 <div className="text-neutral-900 dark:text-white font-semibold flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Deployment Worker Template</span>
+                  <span>Real-Time Cloud Synchronization</span>
                 </div>
                 <p className="text-[11px]">
-                  Deploy <code className="text-amber-600 dark:text-cheezious-yellow font-bold">cloudflare/worker.js</code> with KV binding <code className="font-bold">CHEEZIOUS_KV</code>.
+                  Instantly broadcasts menu updates, pricing changes, and stock availability to all visitors.
                 </p>
               </div>
 
