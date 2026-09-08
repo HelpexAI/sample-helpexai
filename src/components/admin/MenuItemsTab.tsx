@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import { MenuItem, StoreConfig } from "@/data/defaultCheezious";
 import { DishModal } from "./DishModal";
+import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import {
   Utensils,
   Plus,
@@ -29,6 +30,7 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [modalItem, setModalItem] = useState<MenuItem | null | "NEW">(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
 
   // Quick inline price editor state
   const handlePriceChange = async (itemId: string, newPrice: number) => {
@@ -62,21 +64,22 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
     }
   };
 
-  // Delete item
-  const handleDeleteItem = async (item: MenuItem) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      setDeletingId(item.id);
-      try {
-        const res = await onChange((prev) => ({
-          ...prev,
-          items: prev.items.filter((it) => it.id !== item.id),
-        }));
-        if (res?.success) {
-          showToast(`Deleted "${item.name}" from database`, "info");
-        }
-      } finally {
-        setDeletingId(null);
+  // Confirm delete item in modal
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+    const item = itemToDelete;
+    setDeletingId(item.id);
+    try {
+      const res = await onChange((prev) => ({
+        ...prev,
+        items: prev.items.filter((it) => it.id !== item.id),
+      }));
+      if (res?.success) {
+        showToast(`Deleted "${item.name}" from database`, "info");
+        setItemToDelete(null);
       }
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -294,7 +297,7 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
                   <button
                     type="button"
                     disabled={deletingId === item.id}
-                    onClick={() => handleDeleteItem(item)}
+                    onClick={() => setItemToDelete(item)}
                     className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-rose-500 hover:bg-rose-500/10 disabled:opacity-50 transition-colors"
                     title="Delete dish"
                   >
@@ -320,6 +323,18 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
           onSave={handleSaveDish}
           onClose={() => setModalItem(null)}
           onAddCategory={handleAddCategoryFromDishModal}
+        />
+      )}
+
+      {/* Themed Confirm Delete Modal */}
+      {itemToDelete && (
+        <ConfirmDeleteModal
+          isOpen={!!itemToDelete}
+          title="Delete Menu Dish"
+          itemName={itemToDelete.name}
+          isDeleting={deletingId === itemToDelete.id}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setItemToDelete(null)}
         />
       )}
     </div>

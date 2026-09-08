@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { StoreConfig } from "@/data/defaultCheezious";
 import { Layers, Plus, Trash2, ArrowUp, ArrowDown, Edit2, Check, X } from "lucide-react";
+import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 
 interface CategoryTabProps {
   config: StoreConfig;
@@ -14,10 +15,15 @@ interface CategoryTabProps {
 
 export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
   const [newCatName, setNewCatName] = useState("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editCatName, setEditCatName] = useState("");
   const [error, setError] = useState("");
+  const [categoryToDelete, setCategoryToDelete] = useState<{
+    index: number;
+    name: string;
+    itemsCount: number;
+  } | null>(null);
+  const [isDeletingCat, setIsDeletingCat] = useState(false);
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +43,6 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
     }));
     if (res?.success) {
       setNewCatName("");
-      setIsAddModalOpen(false);
       showToast?.(`Category "${trimmed}" created and saved live!`, "success");
     }
   };
@@ -68,25 +73,30 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
     }
   };
 
-  const handleDeleteCategory = async (index: number) => {
+  const handleRequestDeleteCategory = (index: number) => {
     const catToDelete = config.categories[index];
     const itemsUsing = config.items.filter((it) => it.category === catToDelete).length;
+    setCategoryToDelete({
+      index,
+      name: catToDelete,
+      itemsCount: itemsUsing,
+    });
+  };
 
-    if (
-      itemsUsing > 0 &&
-      !window.confirm(
-        `"${catToDelete}" has ${itemsUsing} menu item(s). Are you sure you want to remove this category? The items will remain but won't have a category header.`
-      )
-    ) {
-      return;
-    }
-
-    const res = await onChange((prev) => ({
-      ...prev,
-      categories: prev.categories.filter((_, i) => i !== index),
-    }));
-    if (res?.success) {
-      showToast?.(`Category "${catToDelete}" deleted & updated live!`, "info");
+  const handleConfirmDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    setIsDeletingCat(true);
+    try {
+      const res = await onChange((prev) => ({
+        ...prev,
+        categories: prev.categories.filter((_, i) => i !== categoryToDelete.index),
+      }));
+      if (res?.success) {
+        showToast?.(`Category "${categoryToDelete.name}" deleted live from database!`, "info");
+        setCategoryToDelete(null);
+      }
+    } finally {
+      setIsDeletingCat(false);
     }
   };
 
@@ -112,7 +122,7 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#222631] pb-4">
+      <div className="border-b border-gray-200 dark:border-[#222631] pb-4">
         <div>
           <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-amber-500 dark:text-cheezious-yellow" />
@@ -122,86 +132,7 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
             Add new sections, rename existing categories, or reorder how they appear in the sticky menu tabs.
           </p>
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            setError("");
-            setIsAddModalOpen(true);
-          }}
-          className="bg-cheezious-yellow hover:bg-cheezious-yellowHover text-black font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-glow self-start sm:self-auto transition-all active:scale-95"
-        >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>Add New Category</span>
-        </button>
       </div>
-
-      {/* Add New Category Modal Popup */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 transition-colors duration-200">
-            <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#222631] pb-3">
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-amber-500 dark:text-cheezious-yellow" />
-                <span>Add New Category</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddModalOpen(false);
-                  setError("");
-                }}
-                className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-[#222631] text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddCategory} className="space-y-4 text-xs">
-              <div>
-                <label className="text-neutral-700 dark:text-cheezious-textLight font-semibold block mb-1.5">
-                  Category Name *
-                </label>
-                <input
-                  type="text"
-                  value={newCatName}
-                  onChange={(e) => {
-                    setNewCatName(e.target.value);
-                    setError("");
-                  }}
-                  placeholder="e.g. Desserts, Beverages, Midnight Deals"
-                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none font-medium"
-                  autoFocus
-                  required
-                />
-                {error && (
-                  <p className="text-xs text-rose-500 mt-1.5 font-medium">{error}</p>
-                )}
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddModalOpen(false);
-                    setError("");
-                  }}
-                  className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#222631] dark:hover:bg-[#2D3342] text-neutral-700 dark:text-white font-semibold text-xs transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-cheezious-yellow hover:bg-cheezious-yellowHover text-black font-extrabold text-xs shadow-glow transition-all active:scale-95"
-                >
-                  Create Category
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Quick Add Bar */}
       <form
@@ -322,7 +253,8 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
 
                   {/* Delete */}
                   <button
-                    onClick={() => handleDeleteCategory(index)}
+                    type="button"
+                    onClick={() => handleRequestDeleteCategory(index)}
                     className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#111317] border border-gray-200 dark:border-[#222631] text-rose-500 hover:bg-rose-500/10 transition-colors"
                     title="Delete category"
                   >
@@ -334,6 +266,23 @@ export function CategoryTab({ config, onChange, showToast }: CategoryTabProps) {
           })}
         </div>
       </div>
+
+      {/* Themed Confirm Delete Modal */}
+      {categoryToDelete && (
+        <ConfirmDeleteModal
+          isOpen={!!categoryToDelete}
+          title="Delete Category"
+          itemName={categoryToDelete.name}
+          warningNote={
+            categoryToDelete.itemsCount > 0
+              ? `This category currently contains ${categoryToDelete.itemsCount} menu dish(es). Deleting the category will not delete the dishes, but they will no longer appear under this category header.`
+              : undefined
+          }
+          isDeleting={isDeletingCat}
+          onConfirm={handleConfirmDeleteCategory}
+          onClose={() => setCategoryToDelete(null)}
+        />
+      )}
     </div>
   );
 }

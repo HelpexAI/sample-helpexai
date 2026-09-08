@@ -12,8 +12,8 @@ import { AdminAuthModal } from "@/components/admin/AdminAuthModal";
 import { OperationalTab } from "@/components/admin/OperationalTab";
 import { CategoryTab } from "@/components/admin/CategoryTab";
 import { MenuItemsTab } from "@/components/admin/MenuItemsTab";
-import { LiveSyncBar } from "@/components/admin/LiveSyncBar";
 import { PrintableQrModal } from "@/components/admin/PrintableQrModal";
+import { ConfirmDeleteModal } from "@/components/admin/ConfirmDeleteModal";
 import {
   Crown,
   ArrowLeft,
@@ -28,6 +28,7 @@ import {
   UserCheck,
   ShieldCheck,
   QrCode,
+  RotateCcw,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -47,6 +48,9 @@ export default function AdminPage() {
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"items" | "categories" | "operations">("items");
   const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState<boolean>(false);
+  const [isResetting, setIsResetting] = useState<boolean>(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState<boolean>(false);
 
   // Read isolated session on mount to verify session validity
   useEffect(() => {
@@ -78,13 +82,12 @@ export default function AdminPage() {
     showToast(`Signed in as ${authedUser}`, "success");
   };
 
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out of the Cheezious Admin Portal?")) {
-      clearAdminSession();
-      setUsername("");
-      setIsAuthenticated(false);
-      showToast("Signed out. Session destroyed.", "info");
-    }
+  const handleConfirmLogout = () => {
+    clearAdminSession();
+    setUsername("");
+    setIsAuthenticated(false);
+    setIsLogoutConfirmOpen(false);
+    showToast("Signed out. Session destroyed.", "info");
   };
 
   const handleSessionExpired = () => {
@@ -113,7 +116,7 @@ export default function AdminPage() {
 
   // State 2: Authenticated Dashboard
   return (
-    <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#111317] text-neutral-900 dark:text-white flex flex-col pb-28 selection:bg-cheezious-yellow selection:text-black transition-colors duration-200">
+    <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#111317] text-neutral-900 dark:text-white flex flex-col pb-12 selection:bg-cheezious-yellow selection:text-black transition-colors duration-200">
       {/* Top Navbar */}
       <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#16181F]/95 backdrop-blur-md border-b border-gray-200 dark:border-[#222631] transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -203,9 +206,21 @@ export default function AdminPage() {
               <span className="hidden sm:inline">Print QR</span>
             </button>
 
-            {/* Explicit Logout with Confirmation */}
+            {/* Reset to Defaults with Themed Modal */}
             <button
-              onClick={handleLogout}
+              type="button"
+              onClick={() => setIsResetConfirmOpen(true)}
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-[#1A1D24] dark:hover:bg-[#222631] text-neutral-700 hover:text-neutral-900 dark:text-cheezious-textMuted dark:hover:text-white border border-gray-200 dark:border-[#222631] text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Reset all dishes and settings to default"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Reset Defaults</span>
+            </button>
+
+            {/* Explicit Logout with Themed Modal */}
+            <button
+              type="button"
+              onClick={() => setIsLogoutConfirmOpen(true)}
               className="p-2 sm:px-3 sm:py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
               title="Logout and destroy session token"
               aria-label="Logout"
@@ -277,18 +292,11 @@ export default function AdminPage() {
               config={config}
               onChange={updateStoreConfig}
               onOpenQrModal={() => setIsQrModalOpen(true)}
+              showToast={showToast}
             />
           )}
         </div>
       </main>
-
-      {/* Live Sync Action Bar */}
-      <LiveSyncBar
-        config={config}
-        onReset={resetToDefaults}
-        showToast={showToast}
-        onSessionExpired={handleSessionExpired}
-      />
 
       {/* Printable QR Code Modal */}
       <PrintableQrModal
@@ -296,6 +304,37 @@ export default function AdminPage() {
         isOpen={isQrModalOpen}
         onClose={() => setIsQrModalOpen(false)}
         showToast={showToast}
+      />
+
+      {/* Themed Reset Defaults Modal */}
+      <ConfirmDeleteModal
+        isOpen={isResetConfirmOpen}
+        title="Reset All Store Settings & Dishes"
+        itemName="All Dishes & Categories"
+        description="Are you sure you want to reset all dishes, prices, categories, and operational settings back to official Cheezious defaults? This will immediately overwrite changes in the database."
+        confirmButtonText="Reset to Defaults"
+        isDeleting={isResetting}
+        onConfirm={async () => {
+          setIsResetting(true);
+          try {
+            await resetToDefaults();
+            setIsResetConfirmOpen(false);
+          } finally {
+            setIsResetting(false);
+          }
+        }}
+        onClose={() => setIsResetConfirmOpen(false)}
+      />
+
+      {/* Themed Logout Modal */}
+      <ConfirmDeleteModal
+        isOpen={isLogoutConfirmOpen}
+        title="Sign Out of Admin Portal"
+        itemName="Admin Session"
+        description="Are you sure you want to log out? Your secure admin session token will be cleared."
+        confirmButtonText="Sign Out"
+        onConfirm={handleConfirmLogout}
+        onClose={() => setIsLogoutConfirmOpen(false)}
       />
     </div>
   );
