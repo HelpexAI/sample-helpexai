@@ -11,6 +11,7 @@ interface CategoryTabProps {
 
 export function CategoryTab({ config, onChange }: CategoryTabProps) {
   const [newCatName, setNewCatName] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editCatName, setEditCatName] = useState("");
   const [error, setError] = useState("");
@@ -18,8 +19,11 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newCatName.trim();
-    if (!trimmed) return;
-    if (config.categories.includes(trimmed)) {
+    if (!trimmed) {
+      setError("Please enter a category name.");
+      return;
+    }
+    if (config.categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
       setError("This category already exists.");
       return;
     }
@@ -29,6 +33,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
       categories: [...prev.categories, trimmed],
     }));
     setNewCatName("");
+    setIsAddModalOpen(false);
   };
 
   const handleStartEdit = (index: number) => {
@@ -91,17 +96,99 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 dark:border-[#222631] pb-4">
-        <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-          <Layers className="w-5 h-5 text-amber-500 dark:text-cheezious-yellow" />
-          Category Manager
-        </h3>
-        <p className="text-xs text-neutral-500 dark:text-cheezious-textMuted mt-0.5">
-          Add new sections, rename existing categories, or reorder how they appear in the sticky menu tabs.
-        </p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#222631] pb-4">
+        <div>
+          <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+            <Layers className="w-5 h-5 text-amber-500 dark:text-cheezious-yellow" />
+            Category Manager
+          </h3>
+          <p className="text-xs text-neutral-500 dark:text-cheezious-textMuted mt-0.5">
+            Add new sections, rename existing categories, or reorder how they appear in the sticky menu tabs.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setError("");
+            setIsAddModalOpen(true);
+          }}
+          className="bg-cheezious-yellow hover:bg-cheezious-yellowHover text-black font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-glow self-start sm:self-auto transition-all active:scale-95"
+        >
+          <Plus className="w-4 h-4 stroke-[3]" />
+          <span>Add New Category</span>
+        </button>
       </div>
 
-      {/* Add New Category Form */}
+      {/* Add New Category Modal Popup */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 transition-colors duration-200">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#222631] pb-3">
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <Layers className="w-4 h-4 text-amber-500 dark:text-cheezious-yellow" />
+                <span>Add New Category</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setError("");
+                }}
+                className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-[#222631] text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCategory} className="space-y-4 text-xs">
+              <div>
+                <label className="text-neutral-700 dark:text-cheezious-textLight font-semibold block mb-1.5">
+                  Category Name *
+                </label>
+                <input
+                  type="text"
+                  value={newCatName}
+                  onChange={(e) => {
+                    setNewCatName(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="e.g. Desserts, Beverages, Midnight Deals"
+                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none font-medium"
+                  autoFocus
+                  required
+                />
+                {error && (
+                  <p className="text-xs text-rose-500 mt-1.5 font-medium">{error}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setError("");
+                  }}
+                  className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#222631] dark:hover:bg-[#2D3342] text-neutral-700 dark:text-white font-semibold text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-cheezious-yellow hover:bg-cheezious-yellowHover text-black font-extrabold text-xs shadow-glow transition-all active:scale-95"
+                >
+                  Create Category
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Add Bar */}
       <form
         onSubmit={handleAddCategory}
         className="bg-gray-50 dark:bg-[#1A1D24] p-4 rounded-xl border border-gray-200 dark:border-[#222631] flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
@@ -114,7 +201,7 @@ export function CategoryTab({ config, onChange }: CategoryTabProps) {
               setNewCatName(e.target.value);
               setError("");
             }}
-            placeholder="New Category Name (e.g. Desserts, Beverages)"
+            placeholder="Quick Add Category (e.g. Desserts, Beverages)"
             className="w-full bg-white dark:bg-[#111317] text-neutral-900 dark:text-white text-sm px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none focus:ring-1 focus:ring-cheezious-yellow"
           />
           {error && <p className="text-xs text-rose-500 mt-1">{error}</p>}

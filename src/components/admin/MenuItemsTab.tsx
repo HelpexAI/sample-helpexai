@@ -85,6 +85,18 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
     setModalItem(null);
   };
 
+  const handleAddCategoryFromDishModal = (newCategory: string) => {
+    const trimmed = newCategory.trim();
+    if (!trimmed) return;
+    if (!config.categories.includes(trimmed)) {
+      onChange((prev) => ({
+        ...prev,
+        categories: [...prev.categories, trimmed],
+      }));
+      showToast(`Created category: "${trimmed}"`, "success");
+    }
+  };
+
   // Filtered list
   const filteredItems = useMemo(() => {
     return config.items.filter((it) => {
@@ -282,6 +294,7 @@ export function MenuItemsTab({ config, onChange, showToast }: MenuItemsTabProps)
           currency={config.currency}
           onSave={handleSaveDish}
           onClose={() => setModalItem(null)}
+          onAddCategory={handleAddCategoryFromDishModal}
         />
       )}
     </div>

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { MenuItem } from "@/data/defaultCheezious";
-import { X, Sparkles, AlertCircle } from "lucide-react";
+import { X, Sparkles, AlertCircle, Plus } from "lucide-react";
 
 interface DishModalProps {
   initialItem?: MenuItem | null;
@@ -11,6 +11,7 @@ interface DishModalProps {
   currency: string;
   onSave: (item: MenuItem) => void;
   onClose: () => void;
+  onAddCategory?: (category: string) => void;
 }
 
 export function DishModal({
@@ -19,6 +20,7 @@ export function DishModal({
   currency,
   onSave,
   onClose,
+  onAddCategory,
 }: DishModalProps) {
   const isEditing = !!initialItem;
 
@@ -40,6 +42,8 @@ export function DishModal({
   const [isAvailable, setIsAvailable] = useState(
     initialItem ? initialItem.isAvailable : true
   );
+  const [showAddCat, setShowAddCat] = useState(false);
+  const [newCatInput, setNewCatInput] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -119,9 +123,50 @@ export function DishModal({
 
             {/* Category */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-cheezious-textLight">
-                Category *
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-cheezious-textLight">
+                  Category *
+                </label>
+                {onAddCategory && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCat(!showAddCat)}
+                    className="text-[11px] font-bold text-amber-600 dark:text-cheezious-yellow hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>{showAddCat ? "Cancel" : "+ New Category"}</span>
+                  </button>
+                )}
+              </div>
+
+              {showAddCat && (
+                <div className="flex items-center gap-1.5 p-2 bg-amber-500/10 rounded-xl border border-amber-500/20 mb-1.5">
+                  <input
+                    type="text"
+                    value={newCatInput}
+                    onChange={(e) => setNewCatInput(e.target.value)}
+                    placeholder="Enter new category..."
+                    className="flex-1 bg-white dark:bg-[#111317] text-neutral-900 dark:text-white text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed = newCatInput.trim();
+                      if (trimmed) {
+                        onAddCategory?.(trimmed);
+                        setCategory(trimmed);
+                        setNewCatInput("");
+                        setShowAddCat(false);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-cheezious-yellow hover:bg-cheezious-yellowHover text-black text-xs font-bold rounded-lg shadow-sm shrink-0"
+                  >
+                    Add
+                  </button>
+                </div>
+              )}
+
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
