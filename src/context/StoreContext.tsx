@@ -59,8 +59,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setThemeState(initialTheme);
     if (initialTheme === "dark") {
       document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
     } else {
       document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
     }
   }, []);
 
@@ -70,8 +72,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("cheezious_theme", next);
       if (next === "dark") {
         document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
       } else {
         document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
       }
       return next;
     });
