@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { StoreConfig } from "@/data/defaultCheezious";
 import {
-  pushRemoteStoreConfig,
+  saveRemoteStoreConfig,
   getEffectiveApiUrl,
   setCustomApiUrl,
 } from "@/lib/kvSync";
@@ -13,20 +13,21 @@ import {
   RotateCcw,
   Settings,
   X,
+  Loader2,
 } from "lucide-react";
 
 interface CloudflareSyncBarProps {
   config: StoreConfig;
-  token: string;
   onReset: () => void;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
+  onSessionExpired?: () => void;
 }
 
 export function CloudflareSyncBar({
   config,
-  token,
   onReset,
   showToast,
+  onSessionExpired,
 }: CloudflareSyncBarProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -35,7 +36,13 @@ export function CloudflareSyncBar({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const result = await pushRemoteStoreConfig(config, token);
+      const result = await saveRemoteStoreConfig(config);
+      if (result.isUnauthorized) {
+        showToast(result.message, "error");
+        onSessionExpired?.();
+        return;
+      }
+
       if (result.success) {
         showToast(result.message, "success");
       } else {
@@ -63,10 +70,10 @@ export function CloudflareSyncBar({
           <div className="flex items-center gap-2.5 text-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              Changes auto-saved in local browser cache.
+              Changes auto-saved in local cache.
             </span>
             <span className="text-neutral-500 dark:text-cheezious-textMuted hidden md:inline">
-              Ready to publish globally to Cloudflare KV.
+              Dispatches authenticated POST /save to Cloudflare Worker.
             </span>
           </div>
 
@@ -108,10 +115,17 @@ export function CloudflareSyncBar({
               onClick={handleSave}
               className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gradient-to-r from-cheezious-yellow to-amber-500 hover:from-cheezious-yellowHover hover:to-amber-600 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-glow transition-all active:scale-95 disabled:opacity-50"
             >
-              <Cloud className="w-4 h-4 text-black" />
-              <span>
-                {isSaving ? "Publishing to KV..." : "Save & Push Live to Cloudflare"}
-              </span>
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 text-black animate-spin" />
+                  <span>Saving to KV...</span>
+                </>
+              ) : (
+                <>
+                  <Cloud className="w-4 h-4 text-black" />
+                  <span>Push Changes Live to Cloudflare</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -124,7 +138,7 @@ export function CloudflareSyncBar({
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#222631] pb-3">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                 <Settings className="w-4 h-4 text-amber-500 dark:text-cheezious-yellow" />
-                <span>Cloudflare KV Worker Sync Configuration</span>
+                <span>Cloudflare Worker & KV Configuration</span>
               </h3>
               <button
                 onClick={() => setShowSettings(false)}
@@ -137,17 +151,17 @@ export function CloudflareSyncBar({
             <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
               <div>
                 <label className="text-neutral-700 dark:text-cheezious-textLight font-semibold block mb-1">
-                  Worker API Endpoint URL
+                  Base Worker URL
                 </label>
                 <input
                   type="url"
                   value={apiUrlInput}
                   onChange={(e) => setApiUrlInput(e.target.value)}
-                  placeholder="https://restaurant-api.<your-subdomain>.workers.dev/api/shop/cheezious"
-                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none"
+                  placeholder="https://helpexai.muhammadarslan0111.workers.dev/api/shop/cheezious"
+                  className="w-full bg-gray-50 dark:bg-[#111317] text-neutral-900 dark:text-white text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#222631] focus:border-cheezious-yellow focus:outline-none font-mono"
                 />
                 <p className="text-[11px] text-neutral-500 dark:text-cheezious-textMuted mt-1">
-                  This endpoint receives GET requests to load menu items and POST requests with Authorization Bearer header when saving.
+                  Endpoints used: <code className="text-amber-600 dark:text-cheezious-yellow font-bold">GET /</code>, <code className="text-amber-600 dark:text-cheezious-yellow font-bold">POST /login</code>, and <code className="text-amber-600 dark:text-cheezious-yellow font-bold">POST /save</code>.
                 </p>
               </div>
 
@@ -157,7 +171,7 @@ export function CloudflareSyncBar({
                   <span>Deployment Worker Template</span>
                 </div>
                 <p className="text-[11px]">
-                  A pre-configured Cloudflare Worker script is included in the project under <code className="text-amber-600 dark:text-cheezious-yellow font-bold">cloudflare/worker.js</code>.
+                  Deploy <code className="text-amber-600 dark:text-cheezious-yellow font-bold">cloudflare/worker.js</code> with KV binding <code className="font-bold">CHEEZIOUS_KV</code>.
                 </p>
               </div>
 

@@ -14,27 +14,18 @@ export function AgencyHeaderBanner() {
         <div className="flex items-center gap-2 mx-auto sm:mx-0">
           <Sparkles className="w-4 h-4 shrink-0 text-black animate-pulse" />
           <span>
-            <strong className="font-extrabold tracking-wide">Live Agency Showcase</strong> by{" "}
-            <a
-              href="https://helpexai.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-white transition-colors"
-            >
-              Helpex Solutions
-            </a>
-            . Want a high-speed digital menu & WhatsApp ordering for your restaurant?
+            <strong>Sample Restaurant by Helpex Solutions</strong> — Want a high-speed ordering website like this for your brand?
           </span>
         </div>
         <div className="flex items-center gap-3 mx-auto sm:mx-0">
           <a
-            href="https://wa.me/923146517960?text=Hi%20Helpex%20Solutions!%20I%20saw%20your%20Cheezious%20demo%20and%20want%20a%20similar%20ordering%20website%20for%20my%20restaurant."
+            href="https://wa.me/923146517960?text=Hi%20Helpex%20Solutions!%20I%20saw%20your%20Cheezious%20demo%20and%20want%20to%20build%20a%20website%20for%20my%20restaurant."
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 bg-black text-amber-400 hover:bg-neutral-900 px-3 py-1 rounded-full text-xs font-bold transition-all shadow-sm active:scale-95"
           >
             <MessageSquare className="w-3.5 h-3.5" />
-            <span>Chat on WhatsApp</span>
+            <span>Build Your Website</span>
           </a>
         </div>
       </div>

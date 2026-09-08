@@ -9,7 +9,6 @@ import { FoodCard } from "@/components/FoodCard";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Footer } from "@/components/Footer";
 import {
-  Sparkles,
   Flame,
   ShieldCheck,
   Zap,
@@ -18,8 +17,45 @@ import {
   Pizza,
 } from "lucide-react";
 
+function StorefrontSkeleton() {
+  return (
+    <div className="space-y-8 animate-pulse">
+      {/* Category Tabs Skeleton */}
+      <div className="flex items-center gap-2 overflow-x-auto py-2">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="h-9 w-28 rounded-xl bg-gray-200 dark:bg-[#1A1D24] shrink-0"
+          />
+        ))}
+      </div>
+
+      {/* Grid of Dish Cards Skeleton */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div
+            key={i}
+            className="rounded-2xl bg-white dark:bg-[#1A1D24] border border-gray-200 dark:border-[#222631] overflow-hidden flex flex-col justify-between"
+          >
+            <div className="aspect-[4/3] bg-gray-200 dark:bg-[#16181F] w-full" />
+            <div className="p-3.5 space-y-2.5">
+              <div className="h-3 w-16 bg-amber-500/20 rounded" />
+              <div className="h-4 w-4/5 bg-gray-200 dark:bg-[#222631] rounded" />
+              <div className="h-3 w-full bg-gray-100 dark:bg-[#222631] rounded" />
+              <div className="pt-3 border-t border-gray-100 dark:border-[#222631] flex items-center justify-between">
+                <div className="h-5 w-20 bg-gray-200 dark:bg-[#222631] rounded" />
+                <div className="h-8 w-14 bg-amber-500/20 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
-  const { config, setIsCartOpen, cartCount } = useStore();
+  const { config, setIsCartOpen, cartCount, isLoading } = useStore();
   const [activeCategory, setActiveCategory] = useState<string>("All Items");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -127,8 +163,11 @@ export default function HomePage() {
 
       {/* Main Menu Grid Area */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full">
-        {/* If viewing All Items without search, display category by category */}
-        {groupedCategories ? (
+        {/* Loading Skeleton */}
+        {isLoading ? (
+          <StorefrontSkeleton />
+        ) : groupedCategories ? (
+          /* Grouped by category view */
           <div className="space-y-12">
             {groupedCategories.map((group) => {
               if (group.items.length === 0) return null;

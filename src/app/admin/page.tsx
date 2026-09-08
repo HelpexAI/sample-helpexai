@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useStore } from "@/context/StoreContext";
-import { getAdminToken, setAdminToken } from "@/lib/kvSync";
+import {
+  getAdminSession,
+  setAdminSession,
+  clearAdminSession,
+} from "@/lib/kvSync";
 import { AdminAuthModal } from "@/components/admin/AdminAuthModal";
 import { OperationalTab } from "@/components/admin/OperationalTab";
 import { CategoryTab } from "@/components/admin/CategoryTab";
@@ -12,7 +16,7 @@ import { CloudflareSyncBar } from "@/components/admin/CloudflareSyncBar";
 import {
   Crown,
   ArrowLeft,
-  Lock,
+  LogOut,
   Utensils,
   Layers,
   Store,
@@ -20,6 +24,8 @@ import {
   ExternalLink,
   Sun,
   Moon,
+  UserCheck,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -34,37 +40,64 @@ export default function AdminPage() {
     toggleTheme,
   } = useStore();
 
-  const [token, setTokenState] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"items" | "categories" | "operations">("items");
 
-  // Read existing token from local storage on mount
+  // Read isolated sessionStorage on mount to verify session validity
   useEffect(() => {
-    const existing = getAdminToken();
-    if (existing) {
-      setTokenState(existing);
+    const session = getAdminSession();
+    if (session && session.token) {
+      setUsername(session.username);
       setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
     }
+    setIsCheckingSession(false);
   }, []);
 
-  const handleAuthenticated = (authToken: string) => {
-    setTokenState(authToken);
-    setAdminToken(authToken);
+  const handleAuthenticated = (token: string, authedUser: string) => {
+    setUsername(authedUser);
+    setAdminSession(token, authedUser);
     setIsAuthenticated(true);
-    showToast("Admin session unlocked successfully!", "success");
+    showToast(`Signed in as ${authedUser}`, "success");
   };
 
   const handleLogout = () => {
-    setTokenState("");
-    setAdminToken("");
-    setIsAuthenticated(false);
-    showToast("Admin session locked.", "info");
+    if (window.confirm("Are you sure you want to log out of the Cheezious Admin Portal?")) {
+      clearAdminSession();
+      setUsername("");
+      setIsAuthenticated(false);
+      showToast("Signed out. Session destroyed.", "info");
+    }
   };
 
+  const handleSessionExpired = () => {
+    clearAdminSession();
+    setUsername("");
+    setIsAuthenticated(false);
+    showToast("Your session has expired. Please sign in again.", "error");
+  };
+
+  // Prevent flash while checking session
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#111317] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-neutral-500 dark:text-cheezious-textMuted text-sm font-medium">
+          <div className="w-5 h-5 border-2 border-cheezious-yellow border-t-transparent rounded-full animate-spin" />
+          <span>Verifying Admin Session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // State 1: Admin Login View when not authenticated
   if (!isAuthenticated) {
     return <AdminAuthModal onAuthenticated={handleAuthenticated} />;
   }
 
+  // State 2: Authenticated Dashboard
   return (
     <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#111317] text-neutral-900 dark:text-white flex flex-col pb-28 selection:bg-cheezious-yellow selection:text-black transition-colors duration-200">
       {/* Top Navbar */}
@@ -98,6 +131,18 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* Center: User Status */}
+          <div className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>
+              Signed in as <strong>{username || "admin"}</strong>
+            </span>
+            <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+              Session Active
+            </span>
+          </div>
+
           {/* Right Action buttons */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Theme Toggle */}
@@ -115,6 +160,7 @@ export default function AdminPage() {
               )}
             </button>
 
+            {/* Refresh Remote */}
             <button
               onClick={refreshFromRemote}
               disabled={isLoading}
@@ -122,9 +168,10 @@ export default function AdminPage() {
               title="Pull latest data from Cloudflare KV"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Refresh Remote</span>
+              <span className="hidden sm:inline">Refresh</span>
             </button>
 
+            {/* Live Store in new tab */}
             <Link
               href="/"
               target="_blank"
@@ -132,16 +179,18 @@ export default function AdminPage() {
               title="View Live Store in new tab"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Live Store</span>
+              <span className="hidden sm:inline">Storefront</span>
             </Link>
 
+            {/* Explicit Logout with Confirmation */}
             <button
               onClick={handleLogout}
-              className="p-2 rounded-xl bg-gray-50 hover:bg-rose-500/10 text-neutral-600 hover:text-rose-600 dark:bg-[#1A1D24] dark:hover:bg-rose-500/10 dark:text-rose-400 border border-gray-200 dark:border-[#222631] transition-colors"
-              title="Lock Admin Session"
-              aria-label="Lock Admin Session"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
+              title="Logout and destroy session token"
+              aria-label="Logout"
             >
-              <Lock className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
@@ -160,7 +209,7 @@ export default function AdminPage() {
             }`}
           >
             <Utensils className="w-4 h-4" />
-            <span>Menu Items ({config.items.length})</span>
+            <span>Menu & Price Management ({config.items.length})</span>
           </button>
 
           <button
@@ -172,7 +221,7 @@ export default function AdminPage() {
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>Categories ({config.categories.length})</span>
+            <span>Category Management ({config.categories.length})</span>
           </button>
 
           <button
@@ -184,7 +233,7 @@ export default function AdminPage() {
             }`}
           >
             <Store className="w-4 h-4" />
-            <span>Store Operations & Info</span>
+            <span>Store & Contact Info</span>
           </button>
         </div>
 
@@ -211,9 +260,9 @@ export default function AdminPage() {
       {/* Global Cloudflare KV Push Action Bar */}
       <CloudflareSyncBar
         config={config}
-        token={token}
         onReset={resetToDefaults}
         showToast={showToast}
+        onSessionExpired={handleSessionExpired}
       />
     </div>
   );
