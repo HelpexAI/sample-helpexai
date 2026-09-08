@@ -1,6 +1,5 @@
 import { StoreConfig, defaultCheezious } from "@/data/defaultCheezious";
 
-const STORAGE_KEY = "cheezious_store_config";
 const CUSTOM_API_URL_KEY = "cheezious_custom_api_url";
 
 export const SESSION_TOKEN_KEY = "helpex_admin_token";
@@ -103,78 +102,30 @@ export async function loginAdmin(
 
     if (res.ok) {
       const data = await res.json();
-      const token = data.token || `token_${Date.now()}`;
-      setAdminSession(token, username);
-      return {
-        success: true,
-        token,
-        username,
-        message: "Signed in successfully!",
-      };
-    } else {
-      const errorData = await res.json().catch(() => ({}));
-      const errMsg = errorData.error || errorData.message || "Invalid username or password.";
-      return { success: false, message: errMsg };
+      if (data.token) {
+        setAdminSession(data.token, username);
+        return {
+          success: true,
+          token: data.token,
+          username,
+          message: "Signed in successfully with Cloudflare Worker!",
+        };
+      }
     }
+
+    const errorData = await res.json().catch(() => ({}));
+    const errMsg = errorData.error || errorData.message || "Invalid username or password.";
+    return { success: false, message: errMsg };
   } catch (err: any) {
-    // Graceful fallback for offline demo / unprovisioned backend endpoint
-    console.warn("Remote login endpoint error, checking demo credentials:", err);
-    if (
-      (username === "admin" && password === "admin123") ||
-      password === "admin123" ||
-      password.length >= 6
-    ) {
-      const fallbackToken = `demo_token_${Date.now()}`;
-      setAdminSession(fallbackToken, username);
-      return {
-        success: true,
-        token: fallbackToken,
-        username,
-        message: "Signed in (Demo session active).",
-      };
-    }
     return {
       success: false,
-      message:
-        "Unable to connect to login endpoint. Use demo credentials (admin / admin123) or verify your API URL.",
+      message: `Failed to connect to Cloudflare Worker: ${err?.message || "Network error"}. Check API URL.`,
     };
   }
 }
 
 // ---------------------------------------------------------------------------
-// Local Config Cache (Persistent across reloads)
-// ---------------------------------------------------------------------------
-
-export function getLocalStoreConfig(): StoreConfig {
-  if (typeof window === "undefined") {
-    return defaultCheezious;
-  }
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed && Array.isArray(parsed.items) && Array.isArray(parsed.categories)) {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error("Failed to read local store config:", err);
-  }
-  return defaultCheezious;
-}
-
-export function saveLocalStoreConfig(config: StoreConfig): void {
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    } catch (err) {
-      console.error("Failed to save local store config:", err);
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Remote Fetch (GET [API_URL])
+// Remote Fetch (GET [API_URL] - Purely from Cloudflare Worker KV)
 // ---------------------------------------------------------------------------
 
 export async function fetchRemoteStoreConfig(): Promise<StoreConfig | null> {
@@ -182,7 +133,7 @@ export async function fetchRemoteStoreConfig(): Promise<StoreConfig | null> {
   const fetchUrl = `${baseUrl}?_t=${Date.now()}`;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(fetchUrl, {
       method: "GET",
@@ -200,12 +151,13 @@ export async function fetchRemoteStoreConfig(): Promise<StoreConfig | null> {
     if (res.ok) {
       const data = await res.json();
       if (data && Array.isArray(data.items) && Array.isArray(data.categories)) {
-        saveLocalStoreConfig(data);
         return data;
       }
+    } else {
+      console.warn(`Cloudflare Worker returned HTTP ${res.status}`);
     }
   } catch (err) {
-    console.warn("Could not fetch remote store config, using local fallback:", err);
+    console.error("Failed to fetch from Cloudflare Worker KV:", err);
   }
   return null;
 }
@@ -217,9 +169,6 @@ export async function fetchRemoteStoreConfig(): Promise<StoreConfig | null> {
 export async function saveRemoteStoreConfig(
   config: StoreConfig
 ): Promise<{ success: boolean; isUnauthorized?: boolean; message: string }> {
-  // Always save locally first so work is never lost
-  saveLocalStoreConfig(config);
-
   const session = getAdminSession();
   if (!session || !session.token) {
     clearAdminSession();
@@ -279,23 +228,21 @@ export async function saveRemoteStoreConfig(
     if (res.ok) {
       return {
         success: true,
-        message: "Changes saved live to database!",
+        message: "Changes saved live to Cloudflare Worker KV!",
       };
     } else {
       const errText = await res.text().catch(() => "");
       return {
         success: false,
-        message: `Saved locally! Server responded with ${res.status}: ${
+        message: `Server responded with ${res.status}: ${
           errText || "Authorization failed or endpoint unreachable."
         }`,
       };
     }
   } catch (err: any) {
     return {
-      success: true,
-      message: `Changes saved locally in browser! (API endpoint at ${saveUrl} was unreachable: ${
-        err?.message || "Network error"
-      })`,
+      success: false,
+      message: `Failed to persist to Cloudflare Worker KV: ${err?.message || "Network error"}`,
     };
   }
 }

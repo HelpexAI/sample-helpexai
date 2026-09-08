@@ -3,8 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { MenuItem, StoreConfig, defaultCheezious } from "@/data/defaultCheezious";
 import {
-  getLocalStoreConfig,
-  saveLocalStoreConfig,
   fetchRemoteStoreConfig,
   saveRemoteStoreConfig,
   getAdminSession,
@@ -83,57 +81,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Initial load
+  // Initial load strictly from Cloudflare Worker KV
   useEffect(() => {
-    // 1. First load from local storage
-    const localConfig = getLocalStoreConfig();
-    setConfigState(localConfig);
-
-    // 2. Fetch remote live store data in background
     fetchRemoteStoreConfig()
       .then((remoteConfig) => {
         if (remoteConfig) {
           setConfigState(remoteConfig);
         }
       })
+      .catch((err) => {
+        console.error("Failed to load initial data from Cloudflare Worker KV:", err);
+      })
       .finally(() => {
         setIsLoading(false);
       });
-
-    // 3. Multi-tab synchronization
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "cheezious_store_config" && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          if (parsed && Array.isArray(parsed.items) && Array.isArray(parsed.categories)) {
-            setConfigState(parsed);
-          }
-        } catch (err) {
-          console.error("Failed to parse storage update:", err);
-        }
-      }
-    };
-
-    // 4. Revalidate on window focus when switching between tabs
-    const handleFocus = () => {
-      const freshLocal = getLocalStoreConfig();
-      setConfigState(freshLocal);
-      fetchRemoteStoreConfig().then((remote) => {
-        if (remote) setConfigState(remote);
-      });
-    };
-
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("focus", handleFocus);
-    };
   }, []);
 
   const setConfig = (newConfig: StoreConfig) => {
     setConfigState(newConfig);
-    saveLocalStoreConfig(newConfig);
     const session = getAdminSession();
     if (session && session.token) {
       saveRemoteStoreConfig(newConfig).catch(console.error);
@@ -143,18 +108,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateStoreConfig = (updater: (prev: StoreConfig) => StoreConfig) => {
     setConfigState((prev) => {
       const next = updater(prev);
-      saveLocalStoreConfig(next);
 
       // Automatically sync with remote Worker/KV whenever authenticated
       const session = getAdminSession();
       if (session && session.token) {
-        saveRemoteStoreConfig(next).then((res) => {
-          if (res.success) {
-            console.log("Auto-synced update to live server:", res.message);
-          } else if (res.isUnauthorized) {
-            showToast("Session expired. Please sign in again.", "error");
-          }
-        }).catch(console.error);
+        saveRemoteStoreConfig(next)
+          .then((res) => {
+            if (res.success) {
+              console.log("Auto-synced update to Cloudflare Worker KV:", res.message);
+            } else if (res.isUnauthorized) {
+              showToast("Session expired. Please sign in again.", "error");
+            } else {
+              showToast(res.message, "error");
+            }
+          })
+          .catch((err) => {
+            console.error("KV sync error:", err);
+            showToast("Failed to sync changes with Cloudflare Worker KV", "error");
+          });
       }
 
       return next;
@@ -162,12 +133,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const resetToDefaults = () => {
-    setConfig(defaultCheezious);
+    setConfigState(defaultCheezious);
     const session = getAdminSession();
     if (session && session.token) {
-      saveRemoteStoreConfig(defaultCheezious).catch(console.error);
+      saveRemoteStoreConfig(defaultCheezious)
+        .then((res) => {
+          if (res.success) {
+            showToast("Reset all store settings and synced to Cloudflare Worker KV", "success");
+          } else {
+            showToast(res.message, "error");
+          }
+        })
+        .catch(console.error);
+    } else {
+      showToast("Reset menu items to default state.", "info");
     }
-    showToast("Reset all store settings and menu items to Cheezious defaults", "info");
   };
 
   const refreshFromRemote = async () => {
@@ -175,9 +155,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const remote = await fetchRemoteStoreConfig();
     if (remote) {
       setConfigState(remote);
-      showToast("Updated from live database", "success");
+      showToast("Refreshed live data from Cloudflare Worker KV", "success");
     } else {
-      showToast("No remote updates found. Using local configuration.", "info");
+      showToast("Could not retrieve latest data from Cloudflare Worker KV", "error");
     }
     setIsLoading(false);
   };
