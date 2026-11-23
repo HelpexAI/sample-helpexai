@@ -1,4 +1,6 @@
+
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 import { ToastContainer } from "@/components/Toast";
@@ -44,6 +46,12 @@ export default function RootLayout({
           {children}
           <ToastContainer />
         </StoreProvider>
+
+        <Script
+          src="https://receptionist.helpexai.com/static/widget.js"
+          data-tenant-token="tiwana-restraunt"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
