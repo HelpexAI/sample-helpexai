@@ -48,7 +48,7 @@ export default function RootLayout({
         </StoreProvider>
 
         <Script
-  src="http://localhost:3000/static/widget.js"
+  src="https://receptionist.helpexai.com/static/widget.js"
   data-token="914a483eb30074148e8f45a7eeb42a48"
   strategy="afterInteractive"
 />
