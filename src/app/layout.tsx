@@ -49,7 +49,7 @@ export default function RootLayout({
 
         <Script
           src="https://receptionist.helpexai.com/static/widget.js"
-          data-tenant-token="tiwana-restraunt"
+          data-token="tiwana-restraunt"
           strategy="afterInteractive"
         />
       </body>
